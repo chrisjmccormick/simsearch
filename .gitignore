@@ -47,8 +47,16 @@ Temporary Items
 .apdisk
 *.pyc
 mhc/mhc1.txt
+mhc/mhc2.txt
+mhc/mhc3.txt
+mhc/mhc4.txt
+mhc/mhc5.txt
+mhc/mhc6.txt
 mhc_backup/mhc2.txt
 mhc_backup/mhc3.txt
 mhc_backup/mhc4.txt
 mhc_backup/mhc5.txt
 mhc_backup/mhc6.txt
+mhc_corpus/documents.dict
+mhc_corpus/documents.tfidf_model
+mhc_corpus/tag-tables.pickle
