@@ -13,14 +13,57 @@ from simsearch import SimSearch
 import pickle
 
 class CorpusBuilder(object):
+    """
+    The CorpusBuilder object helps turn a collection of plain text documents 
+    into a gensim corpus (that is, a collection of vectors representing the
+    documents).  
     
+    To use the CorpusBuilder with your documents, you will need to:
+      * Convert your documents to a plain text representation (copy and paste
+        into notepad works well enough).
+      * Provide a representative "title" for each document, which will be used
+        to refer to the document, e.g., in search results.
+      * If you want to create separate vectors for different paragraphs or 
+        sections of your documents, you will need to write code to split them
+        up.
+    
+    The CorpusBuilder will tokenize the documents for you using NLTK, so you
+    do not need to remove punctuation, whitespace, etc.
+    
+    The intended useage is as follows:
+        1. Create a CorpusBuilder object.
+        2. Call `addDocument` for each doc or piece of text in your corpus.
+        3. Call `buildCorpus` to build the corpus.
+        4. Call `save` to write it out to disk 
+        5. Call `toSimSearch` to initialize a SimSearch object and begin 
+           performing similarity searches on the corpus.
+    
+    The `addDocument` step will tokenize your document, record its title and
+    any associated tags, filter stop words, and gather word frequency 
+    information.
+    
+    The `buildCorpus` step takes the final collection of documents, removes
+    words that only occur once, builds the dictionary, then converts the 
+    documents into tf-idf vectors. 
+    
+    Once the corpus has been built, you cannot call `addDocument`.
+    
+    The finalized corpus can be saved to or loaded from disk with `save` and 
+    `load`.
+    
+    
+    """
     def __init__(self, stop_words_file='stop_words.txt', enc_format='utf-8'):
         """
+        `stop_words_file` is the path and filename to a file containing stop
+        words to be filtered from the input text. There should be one token
+        per line in this file.
         
-        
+        `enc_format` is the encoding format of the input text documents.        
         """
         # This list holds all of the documents as lists of words.
         self.documents = []
+        self.titles = []        
         
         # Create mappings for the entry tags.
         self.tagsToEntries = {}
@@ -37,22 +80,57 @@ class CorpusBuilder(object):
             
         self.enc_format = enc_format
         
-    def addDocument(self, title, lines, tags):
+    def addDocument(self, title, lines, tags=[]):
         """
-        Add a document to this corpus.
+        Add a document (or piece of text) to this corpus. The text is 
+        represented by a list of strings. It's ok if the strings contain
+        newlines and other whitespace.
         
+        Provide a `title` to be displayed for this document when it is returned
+        as a search result. Titles are not required to be unique. 
+        
+        `addDocument` Performs the following steps:
+            1. Record document title and tags.
+            2. Convert all letters to lowercase.
+            2. Tokenize the document using NLTK.
+            3. Filter stop words.
+            4. Accumulate word frequency information.
+                    
         Parameters:
             title - String title of this document.
             lines - List of strings representing the document.
-            tags - List of tags, each tag is a separate string.
+            tags - Optional list of tags, each tag is a separate string.
         """
 
-        doc = []        
-        
-        entryID = len(self.documents)        
+        # Do not call `addDocument` after the corpus has been built.
+        assert(not self.dictionary)
 
+        # Get the ID (index) of this document.
+        docID = len(self.documents)        
+
+        # Store the title.
+        self.titles.append(title)
+
+        # Store the list of tags for this journal entry.
+        self.entriesToTags.append(tags)                         
+            
+        # Add mappings from the tags to this journal entry.
+        for tag in tags:
+            # Convert tags to lower case.        
+            tag = tag.lower()
+                
+            # Add the tag to the dictionary.
+            if tag in self.tagsToEntries:
+                self.tagsToEntries[tag].append(docID)
+            else:
+                self.tagsToEntries[tag] = [docID]   
+
+
+        # Parse the document into a list of tokens.
+        doc = []        
         lineNum = 0        
         
+        # Parse each line in the document.
         for line in lines:
             
             lineNum += 1
@@ -65,7 +143,7 @@ class CorpusBuilder(object):
                 raise
             
             # If the string ends in a newline, remove it.
-            line = line.replace('\n', '')
+            line = line.replace('\n', ' ')
 
             # Convert everything to lowercase, then use NLTK to tokenize.
             tokens = nltk.word_tokenize(line.lower())
@@ -82,20 +160,6 @@ class CorpusBuilder(object):
          
         # Add this document to the list of all documents.
         self.documents.append(doc)
-        
-        # Store the list of tags for this journal entry.
-        self.entriesToTags.append(tags)                         
-            
-        # Add mappings from the tags to this journal entry.
-        for tag in tags:
-            # Convert tags to lower case.        
-            tag = tag.lower()
-                
-            # Add the tag to the dictionary.
-            if tag in self.tagsToEntries:
-                self.tagsToEntries[tag].append(entryID)
-            else:
-                self.tagsToEntries[tag] = [entryID]    
     
    
     def buildCorpus(self):
