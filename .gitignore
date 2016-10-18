@@ -60,3 +60,4 @@ mhc_backup/mhc6.txt
 mhc_corpus/documents.dict
 mhc_corpus/documents.tfidf_model
 mhc_corpus/tag-tables.pickle
+mhc_corpus/titles.pickle

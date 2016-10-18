@@ -12,6 +12,10 @@ print 'Parsing Matthew Henry\'s Commentary...'
 
 # For each text file:
 for mhcFile in mhcFiles:
+
+    # Only parse the .txt files.    
+    if not (mhcFile[-4:] == '.txt'):
+        continue   
     
     print '  Parsing file:', mhcFile        
     
