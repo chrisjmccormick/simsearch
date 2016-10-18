@@ -184,7 +184,8 @@ class CorpusBuilder(object):
         corpus = [self.dictionary.doc2bow(text) for text in self.documents]
 
         # Convert the simple bag-of-words vectors to a tf-idf representation.        
-        self.corpus_tfidf = TfidfModel(corpus)
+        self.tfidf_model = TfidfModel(corpus)
+        self.corpus_tfidf = self.tfidf_model[corpus]
         
         
     def printTopNWords(self, topn=10):
@@ -226,21 +227,25 @@ class CorpusBuilder(object):
         # Store the document titles.
         pickle.dump(self.titles, open(save_dir + 'titles.pickle', 'wb'))
         
-        # Write out the corpus.
-        self.corpus_tfidf.save(save_dir + 'documents.tfidf_model')
-        #corpora.MmCorpus.serialize(save_dir + 'journals.mm', self.corpus_tfidf)  # store to disk, for later use
+        # Write out the tfidf model.
+        self.tfidf_model.save(save_dir + 'documents.tfidf_model')
+        
+        # Write out the tfidf corpus.
+        corpora.MmCorpus.serialize(save_dir + 'documents_tfidf.mm', self.corpus_tfidf)  
 
-        self.dictionary.save(save_dir + 'documents.dict')  # store the dictionary, for future reference        
+        # Write out the dictionary.
+        self.dictionary.save(save_dir + 'documents.dict')  
         
     def load(self, save_dir='./'):
         """
         Load the corpus from a save directory.
         """
-        tables = pickle.load(save_dir + 'tag-tables.pickle')
+        tables = pickle.load(open(save_dir + 'tag-tables.pickle', 'rb'))
         self.tagsToEntries = tables[0]
         self.entriesToTags = tables[1]        
-        self.titles = pickle.load(save_dir + 'titles.pickle')
-        self.corpus_tfidf = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
+        self.titles = pickle.load(open(save_dir + 'titles.pickle', 'rb'))
+        self.tfidf_model = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
+        self.corpus_tfidf = corpora.MmCorpus(save_dir + 'documents_tfidf.mm')
         self.dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
         
     def toSimSearch(self):
