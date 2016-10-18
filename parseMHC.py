@@ -2,50 +2,46 @@ from corpusbuilder import CorpusBuilder
 from os import listdir, makedirs
 from os.path import isfile, join, exists
 
-   
 
-# Get all the journal files.
+# Get all the source text files.
 mhcFiles = [f for f in listdir('./mhc/') if isfile(join('./mhc/', f))]
 
 cb = CorpusBuilder()
 
 print 'Parsing Matthew Henry\'s Commentary...'    
 
-# For each journal file:
+# For each text file:
 for mhcFile in mhcFiles:
     
-    #name = journalFile[0:-4]    
     print '  Parsing file:', mhcFile        
     
+    # No tags in this example.
     entry_tags = []    
     
-    # Read in the journal file
+    # Read in the text file
     with open('./mhc/' + mhcFile) as f:
         content = f.readlines()
 
-        volume_name = mhcFile[0:-4]
-
-        # Create a list to hold all of the parsed journal entries.
+        # Get the name of the file without the ".txt"
+        filename = mhcFile[0:-4]
+        
         entry_title = ""       
-           
         entry = ""
         
         # For each line in the file...
         for line in content:
                         
-            # If we find a blank line
-            if line == "\n" and entry:
-                                                
-                if entry:
-                    cb.addDocument(entry_title, [entry], entry_tags)
-                    entry = ""
-                    entry_title = ""
+            # If we find a blank line, treat that as a break in sections.
+            if line == "\n" and entry:                
+                cb.addDocument(entry_title, [entry], entry_tags)
+                entry = ""
+                entry_title = ""
                             
             # Otherwise, it's an entry.
             else:
                 # If this entry doesn't have a title yet, use this line.                
                 if not entry_title:                
-                    entry_title = volume_name + ' - ' + line       
+                    entry_title = filename + ' - ' + line       
                 
                 # Append the words to the entry, separated by spaces.
                 entry += " " + line
@@ -55,16 +51,22 @@ for mhcFile in mhcFiles:
 
 print 'Done.'
 
-print 'Building corpus!'
+print 'Building corpus...'
 
 cb.buildCorpus()
 
-print 'CB contains', len(cb.documents), 'documents.'
+# Print the top 30 most common words.
+cb.printTopNWords(topn=30)
 
+print '\nVocabulary contains', cb.getVocabSize(), 'unique words.'
+
+print 'Corpus contains', len(cb.documents), '"documents" represented by tf-idf vectors.'
+
+print '\nSaving to disk...'
 if not exists('./mhc_corpus/'):
     makedirs('./mhc_corpus/')
 
 cb.save(save_dir='./mhc_corpus/')
 
-
+print 'Done!'
     
