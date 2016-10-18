@@ -100,23 +100,33 @@ class CorpusBuilder(object):
    
     def buildCorpus(self):
         """
-        
+        Build the corpus from the documents:
+            1. Remove words that only appeared once.
+            2. Create the Dictionary object.
+            3. Convert the documents to simple bag-of-words representation.
+            4. Convert the bag-of-words vectors to tf-idf.
         """
         # Remove words that only appear once.
         self.documents = [[token for token in doc if self.frequency[token] > 1]
                           for doc in self.documents]
         
-        print 'Building dictionary...'
-        
         # Build a dictionary from the text.
         self.dictionary = corpora.Dictionary(self.documents)
         
-        print 'Mapping to vector space (creating corpus)...'
         # Map the documents to vectors.
         corpus = [self.dictionary.doc2bow(text) for text in self.documents]
 
         # Convert the simple bag-of-words vectors to a tf-idf representation.        
         self.corpus_tfidf = TfidfModel(corpus)
+        
+        
+    def printTopNWords(self, topn=10):
+        """
+        Print the 'topn' most frequent words in the corpus.
+        
+        This is useful for checking to see if you have any common, bogus tokens
+        that need to be filtered out of the corpus.
+        """
         
         # Get the dictionary as a list of tuples.
         # The tuple is (word_id, count)
@@ -128,12 +138,16 @@ class CorpusBuilder(object):
         
         # Print the most common words.
         # The list is sorted smallest to biggest, so...
-        topn = 30
         print 'Top', topn, 'most frequent words'
         for i in range(-1, -topn, -1):
-            print '  ', self.dictionary[word_counts[i][0]], '    ', word_counts[i][1]
+            print '  %s   %d' % (self.dictionary[word_counts[i][0]].ljust(10), word_counts[i][1])
     
-
+    def getVocabSize(self):
+        """
+        Returns the number of unique words in the final vocabulary (after all
+        filtering).
+        """
+        return len(self.dictionary.keys())
         
     def save(self, save_dir='./'):
         """
