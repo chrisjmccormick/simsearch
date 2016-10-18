@@ -38,19 +38,22 @@ class CorpusBuilder(object):
         5. Call `toSimSearch` to initialize a SimSearch object and begin 
            performing similarity searches on the corpus.
     
-    The `addDocument` step will tokenize your document, record its title and
-    any associated tags, filter stop words, and gather word frequency 
+    The `addDocument` step will convert all characters to lowercase, tokenize
+    your document with NLTK, filter stop words, and gather word frequency 
     information.
     
-    The `buildCorpus` step takes the final collection of documents, removes
-    words that only occur once, builds the dictionary, then converts the 
-    documents into tf-idf vectors. 
+    The `buildCorpus` step takes the final collection of documents (now 
+    represented as filtered lists of tokens), removes words that only occur 
+    once, builds the dictionary, then converts the documents into tf-idf 
+    vectors. 
     
     Once the corpus has been built, you cannot call `addDocument`.
     
     The finalized corpus can be saved to or loaded from disk with `save` and 
     `load`.
     
+    A finalized corpus can be used to initialize a SimSearch object (for 
+    performing similarity searches on the corpus) by calling `toSimSearch`.
     
     """
     def __init__(self, stop_words_file='stop_words.txt', enc_format='utf-8'):
@@ -103,7 +106,7 @@ class CorpusBuilder(object):
         """
 
         # Do not call `addDocument` after the corpus has been built.
-        assert(not self.dictionary)
+        assert(not hasattr(self, 'dictionary'))
 
         # Get the ID (index) of this document.
         docID = len(self.documents)        
@@ -218,7 +221,10 @@ class CorpusBuilder(object):
         Write out the built corpus to a save directory.
         """
         # Store the tag tables.
-        pickle.dump((self.tagsToEntries, self.entriesToTags), open(save_dir + "tag-tables.pickle", "wb"))
+        pickle.dump((self.tagsToEntries, self.entriesToTags), open(save_dir + 'tag-tables.pickle', 'wb'))
+        
+        # Store the document titles.
+        pickle.dump(self.titles, open(save_dir + 'titles.pickle', 'wb'))
         
         # Write out the corpus.
         self.corpus_tfidf.save(save_dir + 'documents.tfidf_model')
@@ -226,10 +232,16 @@ class CorpusBuilder(object):
 
         self.dictionary.save(save_dir + 'documents.dict')  # store the dictionary, for future reference        
         
-    def load(save_dir='./'):
+    def load(self, save_dir='./'):
         """
         Load the corpus from a save directory.
         """
+        tables = pickle.load(save_dir + 'tag-tables.pickle')
+        self.tagsToEntries = tables[0]
+        self.entriesToTags = tables[1]        
+        self.titles = pickle.load(save_dir + 'titles.pickle')
+        self.corpus_tfidf = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
+        self.dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
         
     def toSimSearch(self):
         """
