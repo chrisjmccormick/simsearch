@@ -31,7 +31,6 @@ class SimSearch(object):
         # Look-up the number of features in the tfidf model.
         #self.num_tfidf_features = max(self.corpus_tfidf.dfs) + 1        
         
-        print 'Building LSI model...'
         self.lsi = LsiModel(self.corpus_tfidf, num_topics=self.num_topics, id2word=self.dictionary)   
     
         # Transform corpus to LSI space and index it

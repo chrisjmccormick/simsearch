@@ -61,3 +61,4 @@ mhc_corpus/documents.dict
 mhc_corpus/documents.tfidf_model
 mhc_corpus/tag-tables.pickle
 mhc_corpus/titles.pickle
+mhc_corpus/documents_tfidf.mm
