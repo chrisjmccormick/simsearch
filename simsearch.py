@@ -11,15 +11,26 @@ import numpy as np
 
 class SimSearch(object):
     
-    def __init__(self, corpus_tfidf=None, titles=None, dictionary=None, tagsToEntries=None):
+    
+    def __init__(self, corpus_builder):
         """
-        Initialize with a corpus that has already been converted to tf-idf.
+        Initialize the SimSearch with a CorpusBuilder object, which holds
+        the processed and vectorized corpus.
         
         """        
-        self.corpus_tfidf = corpus_tfidf
-        self.titles = titles
-        self.dictionary = dictionary
-        self.tagsToEntries = tagsToEntries
+        self.cb = corpus_builder
+    
+    def initWithoutCB(self, corpus_tfidf=None, titles=None, dictionary=None, tagsToEntries=None):
+        """
+        SimSearch is generally intented to be used along with a CorpusBuilder,
+        but it is also possible to provide the required objects separately.
+        """        
+        # TODO...        
+        #self.corpus_tfidf = corpus_tfidf
+        #self.titles = titles
+        #self.dictionary = dictionary
+        #self.tagsToEntries = tagsToEntries
+        
 
     def trainLSI(self, num_topics=100):
         """
@@ -31,10 +42,10 @@ class SimSearch(object):
         # Look-up the number of features in the tfidf model.
         #self.num_tfidf_features = max(self.corpus_tfidf.dfs) + 1        
         
-        self.lsi = LsiModel(self.corpus_tfidf, num_topics=self.num_topics, id2word=self.dictionary)   
+        self.lsi = LsiModel(self.cb.corpus_tfidf, num_topics=self.num_topics, id2word=self.cb.dictionary)   
     
         # Transform corpus to LSI space and index it
-        self.index = similarities.MatrixSimilarity(self.lsi[self.corpus_tfidf], num_features=num_topics) 
+        self.index = similarities.MatrixSimilarity(self.lsi[self.cb.corpus_tfidf], num_features=num_topics) 
     
     
     def findSimilarToVector(self, input_tfidf, topn=10, in_corpus=False, verbose=True):
@@ -67,7 +78,7 @@ class SimSearch(object):
             print 'Most similar documents:'
             for i in range(0, len(results)):
                 # Print the similarity value followed by the entry title.
-                print '  %.2f    %s' % (results[i][1], self.titles[results[i][0]])
+                print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
             
         return results
     
@@ -86,7 +97,7 @@ class SimSearch(object):
         #  1. Look up the tf-idf vector for the entry.
         #  2. Project it onto the LSI vector space.
         #  3. Compare the LSI vector to the entire collection.
-        tfidf_vec = self.corpus_tfidf[entry_id]
+        tfidf_vec = self.cb.corpus_tfidf[entry_id]
         
         # Pass the call down, specifying that the input is a part of the 
         # corpus.
@@ -119,13 +130,13 @@ class SimSearch(object):
         
         # I pre-pend a '!' to indicate that a journal entry does not belong under
         # a specific tag (I do this to create negative samples)
-        if ('!' + tag) in self.tagsToEntries:
-            exclude_ids = set(self.tagsToEntries['!' + tag])
+        if ('!' + tag) in self.cb.tagsToEntries:
+            exclude_ids = set(self.cb.tagsToEntries['!' + tag])
         else:
             exclude_ids = set()
         
         # Find all journal entries marked with 'tag'.
-        input_ids = self.tagsToEntries[tag]
+        input_ids = self.cb.tagsToEntries[tag]
         
         if verbose:
             print '\nMost similar documents to "' + tag + '":'
@@ -136,9 +147,9 @@ class SimSearch(object):
         
         for i in input_ids:
             # Get the LSI vector for this journal.    
-            input_vec = self.lsi[self.corpus_tfidf[i]]
+            input_vec = self.lsi[self.cb.corpus_tfidf[i]]
         
-            print '  ' + self.titles[i]
+            print '  ' + self.cb.titles[i]
         
             # Calculate the similarities between this and all other entries.
             sims = self.index[input_vec]
@@ -166,7 +177,7 @@ class SimSearch(object):
             if entry_id not in input_ids and entry_id not in exclude_ids:
                 
                 results.append(sims_sum[i])
-                print '  %.2f    %s' % (sims_sum[i][1], self.titles[sims_sum[i][0]])
+                print '  %.2f    %s' % (sims_sum[i][1], self.cb.titles[sims_sum[i][0]])
                 shown = shown + 1
             
             # Stop when we've displayed 'topn' results.

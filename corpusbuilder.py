@@ -183,6 +183,10 @@ class CorpusBuilder(object):
         # Map the documents to vectors.
         corpus = [self.dictionary.doc2bow(text) for text in self.documents]
 
+        # Delete the tokenized representation of the documents--no need to
+        # carry this around!
+        del self.documents[:]
+
         # Convert the simple bag-of-words vectors to a tf-idf representation.        
         self.tfidf_model = TfidfModel(corpus)
         self.corpus_tfidf = self.tfidf_model[corpus]
@@ -282,12 +286,5 @@ class CorpusBuilder(object):
         self.corpus_tfidf = corpora.MmCorpus(save_dir + 'documents_tfidf.mm')
         self.dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
         
-    def toSimSearch(self):
-        """
-        Initialize a SimSearch object using the data in this corpus.
-        """        
-        return SimSearch(corpus_tfidf=self.corpus_tfidf, titles=self.titles, 
-                         dictionary=self.dictionary, 
-                         tagsToEntries=self.tagsToEntries)
         
         
