@@ -107,14 +107,18 @@ class SimSearch(object):
         """
         Find documents in the corpus similar to the provided input text.
 
-        `text` should be a single string. It will be parsed and tokenized in 
-        the same manner used by the CorpusBuilder.        
+        `text` should be a single string. It will be parsed, tokenized, and
+        converted to a tf-idf vector by the CorpusBuilder following the same
+        procedure that was used to process the corpus.
         
         Returns the results as a list of tuples in the form:
             (entry_id, similarity_value)
         """
+        # Parse the input text and create a tf-idf representation.        
+        tfidf_vec = self.cb.newTextToTfidfVector(text)
         
-                
+        # Pass the call down.        
+        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False, verbose=verbose)
         
         
     def findMoreOfTag(self, tag, topn=10, verbose=True):
