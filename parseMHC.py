@@ -1,4 +1,5 @@
 from corpusbuilder import CorpusBuilder
+from simsearch import SimSearch
 from os import listdir, makedirs
 from os.path import isfile, join, exists
 
@@ -7,6 +8,8 @@ from os.path import isfile, join, exists
 mhcFiles = [f for f in listdir('./mhc/') if isfile(join('./mhc/', f))]
 
 cb = CorpusBuilder()
+
+cb.setStopWordList('stop_words.txt')
 
 print 'Parsing Matthew Henry\'s Commentary...'    
 
@@ -64,13 +67,20 @@ cb.printTopNWords(topn=30)
 
 print '\nVocabulary contains', cb.getVocabSize(), 'unique words.'
 
-print 'Corpus contains', len(cb.documents), '"documents" represented by tf-idf vectors.'
+print 'Corpus contains', len(cb.corpus_tfidf), '"documents" represented by tf-idf vectors.'
+
+# Initialize a SimSearch object from the corpus.
+ssearch = SimSearch(cb)
+
+# Train LSI with 100 topics.
+print '\nTraining LSI...'
+ssearch.trainLSI(num_topics=100)
 
 print '\nSaving to disk...'
 if not exists('./mhc_corpus/'):
     makedirs('./mhc_corpus/')
 
-cb.save(save_dir='./mhc_corpus/')
+ssearch.save(save_dir='./mhc_corpus/')
 
 print 'Done!'
     

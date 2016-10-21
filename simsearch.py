@@ -7,6 +7,7 @@ Created on Fri Oct 14 21:00:58 2016
 
 from gensim.models import LsiModel
 from gensim import similarities
+from corpusbuilder import CorpusBuilder
 import numpy as np
 
 class SimSearch(object):
@@ -24,8 +25,8 @@ class SimSearch(object):
         """
         SimSearch is generally intented to be used along with a CorpusBuilder,
         but it is also possible to provide the required objects separately.
+        TODO - This needs to be implemented.
         """        
-        # TODO...        
         #self.corpus_tfidf = corpus_tfidf
         #self.titles = titles
         #self.dictionary = dictionary
@@ -190,6 +191,36 @@ class SimSearch(object):
 
         return results
         
+    def save(self, save_dir='./'):
+        """
+        Save this SimSearch object to disk for later use.
         
+        This also saves the underlying CorpusBuilder object to disk.
+        """
+
+        # Save the LSI model and the LSI index.        
+        self.index.save(save_dir + 'index.mm')
+        self.lsi.save(save_dir + 'lsi.model')
+
+        # Save the underlying CorpusBuilder as well.        
+        self.cb.save(save_dir)
         
+    @classmethod
+    def load(cls, save_dir='./'):
+        """
+        Load a SimSearch object from the specified directory.
+        """
+        # First create and load the underlying CorpusBuilder.
+        cb = CorpusBuilder()
+        cb.load(save_dir)        
+
+        ssearch = SimSearch(cb)        
+        
+        # Load the LSI index.
+        ssearch.index = similarities.MatrixSimilarity.load(save_dir + 'index.mm')
+        
+        # Load the LSI model.
+        ssearch.lsi = LsiModel.load(save_dir + 'lsi.model')
+        
+        return ssearch        
         
