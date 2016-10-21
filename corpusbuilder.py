@@ -9,8 +9,11 @@ import nltk
 from gensim import corpora
 from gensim.models import TfidfModel
 from collections import defaultdict
-from simsearch import SimSearch
 import pickle
+
+# I lazily made this a global constant so that I wouldn't have to include
+# it in the save and load features.
+enc_format='utf-8'
 
 class CorpusBuilder(object):
     """
@@ -56,7 +59,7 @@ class CorpusBuilder(object):
     performing similarity searches on the corpus) by calling `toSimSearch`.
     
     """
-    def __init__(self, stop_words_file='stop_words.txt', enc_format='utf-8'):
+    def __init__(self):
         """
         `stop_words_file` is the path and filename to a file containing stop
         words to be filtered from the input text. There should be one token
@@ -72,17 +75,22 @@ class CorpusBuilder(object):
         self.tagsToEntries = {}
         self.entriesToTags = []
 
-        # Count the occurrences of each word and store in 'frequency'.        
-        self.frequency = defaultdict(int)        
+        # Count the occurrences of each word and store in 'frequency'.
+        # This is a temporary data structure used for filtering out words
+        # that only occur once in the corpus.
+        # The final word counts can be found in self.dictionary        
+        self.frequency = defaultdict(int)               
         
+    def setStopWordList(self, stop_words_file):
+        """
+        Specify the list of "stop words" to be removed from the corpus. 
+        """
         # Read in all of the stop words (one per line) and store them as a set.
         # The call to f.read().splitlines() reads the lines without the newline
-        # char.        
+        # char.       
         with open(stop_words_file) as f:
-            self.stoplist = set(f.read().splitlines())
-            
-        self.enc_format = enc_format
-        
+            self.stoplist = set(f.read().splitlines())        
+    
     def addDocument(self, title, lines, tags=[]):
         """
         Add a document (or piece of text) to this corpus. The text is 
@@ -140,7 +148,7 @@ class CorpusBuilder(object):
             
             # Decode the string into Unicode so the NLTK can handle it.
             try:    
-                line = line.decode(self.enc_format)        
+                line = line.decode(enc_format)        
             except:
                 print 'Failed to decode line', lineNum, ': ', line
                 raise
@@ -203,7 +211,7 @@ class CorpusBuilder(object):
         # so the NLTK can handle it.
         if isinstance(text, str):
             try:    
-                text = text.decode(self.enc_format)        
+                text = text.decode(enc_format)        
             except:
                 print 'Failed to decode input text:', text
                 raise
@@ -272,7 +280,14 @@ class CorpusBuilder(object):
         corpora.MmCorpus.serialize(save_dir + 'documents_tfidf.mm', self.corpus_tfidf)  
 
         # Write out the dictionary.
-        self.dictionary.save(save_dir + 'documents.dict')  
+        self.dictionary.save(save_dir + 'documents.dict')
+        
+        # Objects that are not saved:
+        #  - stop_list - You don't need to filter stop words for new input
+        #                text, they simply aren't found in the dictionary.
+        #  - frequency - This preliminary word count object is only used for
+        #                removing infrequent words. Final word counts are in
+        #                the `dictionary` object.
         
     def load(self, save_dir='./'):
         """
