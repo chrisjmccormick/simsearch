@@ -209,7 +209,10 @@ class SimSearch(object):
     def load(cls, save_dir='./'):
         """
         Load a SimSearch object from the specified directory.
+        
+        This also loads the underlying CorpusBuilder object.
         """
+        
         # First create and load the underlying CorpusBuilder.
         cb = CorpusBuilder()
         cb.load(save_dir)        

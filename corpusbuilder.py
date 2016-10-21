@@ -35,11 +35,13 @@ class CorpusBuilder(object):
     
     The intended useage is as follows:
         1. Create a CorpusBuilder object.
-        2. Call `addDocument` for each doc or piece of text in your corpus.
-        3. Call `buildCorpus` to build the corpus.
-        4. Call `save` to write it out to disk 
-        5. Call `toSimSearch` to initialize a SimSearch object and begin 
-           performing similarity searches on the corpus.
+        2. Call `setStopWordList` to provide the list of stop words.
+        3. Call `addDocument` for each doc or piece of text in your corpus.
+        4. Call `buildCorpus` to build the corpus.
+        5. Create a SimSearch object (providing the built corpus to the 
+           SimSearch constructor) and start performing similarity searches!
+        6. Save and load state by calling the save and load functions of the
+           SimSearch object--this will save the built corpus as well.
     
     The `addDocument` step will convert all characters to lowercase, tokenize
     your document with NLTK, filter stop words, and gather word frequency 
@@ -52,12 +54,11 @@ class CorpusBuilder(object):
     
     Once the corpus has been built, you cannot call `addDocument`.
     
-    The finalized corpus can be saved to or loaded from disk with `save` and 
-    `load`.
-    
-    A finalized corpus can be used to initialize a SimSearch object (for 
-    performing similarity searches on the corpus) by calling `toSimSearch`.
-    
+    The final, built CorpusBuilder can be saved to and loaded from a directory
+    using `save` and `load` (Note: Only *built* corpuses can be saved).
+    The intended useage, however is to simply save and load the SimSearch 
+    object (which also saves the underlying CorpusBuilder).
+        
     """
     def __init__(self):
         """
