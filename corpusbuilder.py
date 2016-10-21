@@ -186,6 +186,40 @@ class CorpusBuilder(object):
         # Convert the simple bag-of-words vectors to a tf-idf representation.        
         self.tfidf_model = TfidfModel(corpus)
         self.corpus_tfidf = self.tfidf_model[corpus]
+    
+    
+    def newTextToTfidfVector(self, text):
+        """
+        This function takes new input `text` (not part of the original corpus),
+        and processes it into a tf-idf vector.
+        
+        The input text should be a single string.
+        """
+        # If the string is not already unicode, decode the string into unicode
+        # so the NLTK can handle it.
+        if isinstance(text, str):
+            try:    
+                text = text.decode(self.enc_format)        
+            except:
+                print 'Failed to decode input text:', text
+                raise
+        
+        # If the string ends in a newline, remove it.
+        text = text.replace('\n', ' ')
+
+        # Convert everything to lowercase, then use NLTK to tokenize.
+        tokens = nltk.word_tokenize(text.lower())
+       
+        # Remove stop words.
+        # TODO - I think I shouldn't need to do this, it was only for building
+        #       the dictionary. 
+        #tokens = [word for word in tokens if word not in self.stoplist]
+
+        # Convert the tokenized text into a bag of words representation.
+        bow_vec = self.dictionary.doc2bow(tokens) 
+        
+        # Convert the bag-of-words representation to tf-idf
+        return self.tfidf_model[bow_vec]
         
         
     def printTopNWords(self, topn=10):

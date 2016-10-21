@@ -91,6 +91,19 @@ class SimSearch(object):
         # Pass the call down, specifying that the input is a part of the 
         # corpus.
         return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=True, verbose=verbose)
+    
+    def findSimilarToText(self, text, topn=10, verbose=True):
+        """
+        Find documents in the corpus similar to the provided input text.
+
+        `text` should be a single string. It will be parsed and tokenized in 
+        the same manner used by the CorpusBuilder.        
+        
+        Returns the results as a list of tuples in the form:
+            (entry_id, similarity_value)
+        """
+        
+                
         
         
     def findMoreOfTag(self, tag, topn=10, verbose=True):
