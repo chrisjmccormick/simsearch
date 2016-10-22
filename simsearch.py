@@ -11,7 +11,17 @@ from corpusbuilder import CorpusBuilder
 import numpy as np
 
 class SimSearch(object):
+    """
+    SimSearch allows you to search a collection of documents by providing 
+    conceptually similar text as the search query, as opposed to the typical 
+    keyword-based approach. This technique is also referred to as semantic 
+    search or concept search.
     
+    To use SimSearch, the document collection must first be converted into a
+    gensim corpus. This is accomplished using the CorpusBuilder class. Once
+    the corpus is complete, use it to construct a SimSearch object and perform
+    similarity searches.
+    """
     
     def __init__(self, corpus_builder):
         """
@@ -62,7 +72,7 @@ class SimSearch(object):
         
         # Sort the similarities from largest to smallest.
         # 'sims' becomes a list of tuples of the form: 
-        #    (entry_id, similarity_value)
+        #    (doc_id, similarity_value)
         sims = sorted(enumerate(sims), key=lambda item: -item[1])   
 
         # Select just the top N results.
@@ -84,21 +94,21 @@ class SimSearch(object):
         return results
     
     
-    def findSimilarToEntry(self, entry_id, topn=10, verbose=True):
+    def findSimilarToDoc(self, doc_id, topn=10, verbose=True):
         """
         Find documents similar to the specified entry number in the corpus.
         
         This will not return the input document in the results list.
         
         Returns the results as a list of tuples in the form:
-            (entry_id, similarity_value)
+            (doc_id, similarity_value)
         """
         
-        # Find the most similar entries to 'entry_id'
+        # Find the most similar entries to 'doc_id'
         #  1. Look up the tf-idf vector for the entry.
         #  2. Project it onto the LSI vector space.
         #  3. Compare the LSI vector to the entire collection.
-        tfidf_vec = self.cb.corpus_tfidf[entry_id]
+        tfidf_vec = self.cb.corpus_tfidf[doc_id]
         
         # Pass the call down, specifying that the input is a part of the 
         # corpus.
@@ -113,7 +123,7 @@ class SimSearch(object):
         procedure that was used to process the corpus.
         
         Returns the results as a list of tuples in the form:
-            (entry_id, similarity_value)
+            (doc_id, similarity_value)
         """
         # Parse the input text and create a tf-idf representation.        
         tfidf_vec = self.cb.newTextToTfidfVector(text)
@@ -133,14 +143,14 @@ class SimSearch(object):
         # All tags should be lower case to avoid mistakes.
         tag = tag.lower()        
         
-        # I pre-pend a '!' to indicate that a journal entry does not belong under
+        # I pre-pend a '!' to indicate that a document does not belong under
         # a specific tag (I do this to create negative samples)
         if ('!' + tag) in self.cb.tagsToEntries:
             exclude_ids = set(self.cb.tagsToEntries['!' + tag])
         else:
             exclude_ids = set()
         
-        # Find all journal entries marked with 'tag'.
+        # Find all documents marked with 'tag'.
         input_ids = self.cb.tagsToEntries[tag]
         
         if verbose:
@@ -151,7 +161,7 @@ class SimSearch(object):
         sims_sum = []
         
         for i in input_ids:
-            # Get the LSI vector for this journal.    
+            # Get the LSI vector for this document.    
             input_vec = self.lsi[self.cb.corpus_tfidf[i]]
         
             print '  ' + self.cb.titles[i]
@@ -175,11 +185,11 @@ class SimSearch(object):
         
         shown = 0
         for i in range(0, len(sims_sum)):
-            entry_id = sims_sum[i][0]    
+            doc_id = sims_sum[i][0]    
         
             # If the result is not one of the inputs, and not a negative sample,
             # show it.
-            if entry_id not in input_ids and entry_id not in exclude_ids:
+            if doc_id not in input_ids and doc_id not in exclude_ids:
                 
                 results.append(sims_sum[i])
                 print '  %.2f    %s' % (sims_sum[i][1], self.cb.titles[sims_sum[i][0]])
