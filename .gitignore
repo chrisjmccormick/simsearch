@@ -64,3 +64,5 @@ mhc_corpus/titles.pickle
 mhc_corpus/documents_tfidf.mm
 mhc_corpus/documents_tfidf.mm.index
 mhc_corpus/index.mm
+mhc_corpus/lsi.model
+mhc_corpus/lsi.model.projection
