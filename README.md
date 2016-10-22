@@ -20,6 +20,7 @@ SimSearch consists of two classes:
 ## Installation & Dependencies
 
 You'll need to install:
+
 1. [gensim](https://radimrehurek.com/gensim/install.html) (for topic modeling)
 2. [NLTK](http://www.nltk.org/install.html)
 3. The Punkt Tokenizer Models (for tokenizing) using the NLTK downloader (Run nltk.download() in Python to launch the downloader).
@@ -32,7 +33,7 @@ The sample document collection is an exhaustive Biblical commentary written arou
 
 Here are the steps to run the example.
 
-Step 1: Unzip MHC.zip (MHC = "Matthew Henry's Commentary") so that you have /mhc/mhc1.txt, mhc2.txt, mhc3.txt, ...
+Step 1: Unzip mhc.zip (under `/mhc/`, MHC = "Matthew Henry's Commentary") so that you have `/mhc/mhc1.txt`, `/mhc/mhc2.txt`, ... `/mhc/mhc6.txt`.
 
 Step 2: Run the script `parseMHC.py`. This will use CorpusBuilder to create a gensim corpus from the commentary. This will take a couple minutes. Finally, the resulting CorpusBuilder object is used to create a SimSearch object, and this is saved to the subdirectory `/mhc_corpus/`.
 
@@ -70,10 +71,12 @@ Option 2: `findSimilarToText` allows you to provide new input text (that does no
 
 ## Punkt Installation
 Once you've installed NLTK, type the following in Python to launch the NLTK downloader utility.
+
 >> import nltk
+
 >> nltk.download()
 
 Then download `punkt` from the Models tab.
-![http://www.mccormickml.com/assets/nltk/nltk_downloader_punkt.png]
+![NLTK Downloader](http://www.mccormickml.com/assets/nltk/nltk_downloader_punkt.png)
 
 
