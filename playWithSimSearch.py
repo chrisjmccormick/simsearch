@@ -11,13 +11,12 @@ from simsearch import SimSearch
 print 'Loading the saved SimSearch...'
 ssearch = SimSearch.load(save_dir='./mhc_corpus/')
 
-# Find documents similar to entry number 100.
+# Find documents similar to 'document' number 100.
 # Entry 100 is commentary on the seventh day of creation, when God rested.
 # The top match is commentary on the fourth commandment--to obey the sabbath.
 # (Exodus Chapter 20).
-ssearch.findSimilarToEntry(entry_id=100, topn=10)
+ssearch.findSimilarToDoc(doc_id=100, topn=10)
 
 # Find documents similar to some text.
-# TODO - Maybe I could find some text from another author for an interesting
-#        comparison?
-ssearch.findSimilarToText("I love to take Sundays as a day of rest.")
+# A quote from St. Augustine...
+ssearch.findSimilarToText('You have made us for yourself, O Lord, and our hearts are restless until they rest in you.')
