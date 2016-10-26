@@ -89,7 +89,11 @@ class SimSearch(object):
             print 'Most similar documents:'
             for i in range(0, len(results)):
                 # Print the similarity value followed by the entry title.
-                print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
+                #print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
+                line_nums = self.cb.getDocLocation(results[i][0])
+                
+                
+                print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
             
         return results
     

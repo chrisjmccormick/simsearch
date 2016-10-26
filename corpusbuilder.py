@@ -76,6 +76,9 @@ class CorpusBuilder(object):
         self.tagsToEntries = {}
         self.entriesToTags = []
 
+        self.files = []
+        self.doc_line_nums = []
+
         # Count the occurrences of each word and store in 'frequency'.
         # This is a temporary data structure used for filtering out words
         # that only occur once in the corpus.
@@ -92,7 +95,7 @@ class CorpusBuilder(object):
         with open(stop_words_file) as f:
             self.stoplist = set(f.read().splitlines())        
     
-    def addDocument(self, title, lines, tags=[]):
+    def addDocument(self, title, lines, tags=[], filename=None, doc_start=None, doc_end=None):
         """
         Add a document (or piece of text) to this corpus. The text is 
         represented by a list of strings. It's ok if the strings contain
@@ -137,6 +140,15 @@ class CorpusBuilder(object):
             else:
                 self.tagsToEntries[tag] = [docID]   
 
+        # Store the filenames only once.
+        if filename in self.files:        
+            fileID = self.files.index(filename)
+        else:
+            self.files.append(filename)            
+            fileID = len(self.files) - 1
+
+        # Store the file and line numbers.
+        self.doc_line_nums.append((fileID, doc_start, doc_end))
 
         # Parse the document into a list of tokens.
         doc = []        
@@ -263,7 +275,15 @@ class CorpusBuilder(object):
         filtering).
         """
         return len(self.dictionary.keys())
-        
+    
+    def getDocLocation(self, doc_id):
+        """
+        Return the filename and line numbers that 'doc_id' came from.
+        """
+        line_nums = self.doc_line_nums[doc_id]        
+        filename = self.files[line_nums[0]]
+        return filename, line_nums[1], line_nums[2]
+     
     def save(self, save_dir='./'):
         """
         Write out the built corpus to a save directory.
@@ -283,6 +303,12 @@ class CorpusBuilder(object):
         # Write out the dictionary.
         self.dictionary.save(save_dir + 'documents.dict')
         
+        # Save the filenames.
+        pickle.dump(self.files, open(save_dir + 'files.pickle', 'wb'))
+        
+        # Save the file ID and line numbers for each document.
+        pickle.dump(self.doc_line_nums, open(save_dir + 'doc_line_nums.pickle', 'wb'))
+        
         # Objects that are not saved:
         #  - stop_list - You don't need to filter stop words for new input
         #                text, they simply aren't found in the dictionary.
@@ -301,6 +327,8 @@ class CorpusBuilder(object):
         self.tfidf_model = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
         self.corpus_tfidf = corpora.MmCorpus(save_dir + 'documents_tfidf.mm')
         self.dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
+        self.files = pickle.load(open(save_dir + 'files.pickle', 'rb'))
+        self.doc_line_nums = pickle.load(open(save_dir + 'doc_line_nums.pickle', 'rb'))
         
         
         
