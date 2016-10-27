@@ -59,7 +59,7 @@ class SimSearch(object):
         self.index = similarities.MatrixSimilarity(self.lsi[self.cb.corpus_tfidf], num_features=num_topics) 
     
     
-    def findSimilarToVector(self, input_tfidf, topn=10, in_corpus=False, verbose=True):
+    def findSimilarToVector(self, input_tfidf, topn=10, in_corpus=False):
         """
         Find documents in the corpus similar to the provided document, 
         represented by its tf-idf vector 'input_tfidf'.
@@ -83,22 +83,11 @@ class SimSearch(object):
             results = sims[1:1 + topn]    
         else:
             results = sims[0:topn] 
-        
-        # Print each of the results.
-        if verbose:            
-            print 'Most similar documents:'
-            for i in range(0, len(results)):
-                # Print the similarity value followed by the entry title.
-                #print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
-                line_nums = self.cb.getDocLocation(results[i][0])
-                
-                
-                print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
-            
+                    
         return results
     
     
-    def findSimilarToDoc(self, doc_id, topn=10, verbose=True):
+    def findSimilarToDoc(self, doc_id, topn=10):
         """
         Find documents similar to the specified entry number in the corpus.
         
@@ -116,9 +105,9 @@ class SimSearch(object):
         
         # Pass the call down, specifying that the input is a part of the 
         # corpus.
-        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=True, verbose=verbose)
+        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=True)
     
-    def findSimilarToText(self, text, topn=10, verbose=True):
+    def findSimilarToText(self, text, topn=10):
         """
         Find documents in the corpus similar to the provided input text.
 
@@ -133,7 +122,7 @@ class SimSearch(object):
         tfidf_vec = self.cb.newTextToTfidfVector(text)
         
         # Pass the call down.        
-        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False, verbose=verbose)
+        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False)
         
         
     def findMoreOfTag(self, tag, topn=10, verbose=True):
@@ -204,7 +193,34 @@ class SimSearch(object):
                 break
 
         return results
-        
+
+    def printResultsByTitle(self, results):
+        """
+        Print the supplied list of search results in the format:
+            [similarity]   [document title]
+            [similarity]   [document title]
+            ...
+        """
+        print 'Most similar documents:'
+        for i in range(0, len(results)):
+            # Print the similarity value followed by the entry title.            
+            print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
+
+    def printResultsByLineNumbers(self, results):
+        """
+        Print the supplied list of search results in the format:
+            [similarity]   [source filename]  [line numbers]
+            [similarity]   [source filename]  [line numbers]
+            ...
+        """        
+        print 'Most similar documents:'
+        for i in range(0, len(results)):
+            # Print the similarity value followed by the source file and line
+            # numbers.
+            line_nums = self.cb.getDocLocation(results[i][0])
+                
+            print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
+    
     def save(self, save_dir='./'):
         """
         Save this SimSearch object to disk for later use.
