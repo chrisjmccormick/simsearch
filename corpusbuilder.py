@@ -308,6 +308,34 @@ class CorpusBuilder(object):
         line_nums = self.doc_line_nums[doc_id]        
         filename = self.files[line_nums[0]]
         return filename, line_nums[1], line_nums[2]
+    
+    def readDocSource(self, doc_id):
+        """
+        Reads the original source file for the document 'doc_id' and retrieves
+        the source lines.
+        """
+        # Lookup the source for the doc.
+        line_nums = self.doc_line_nums[doc_id]        
+        
+        filename = self.files[line_nums[0]]
+        line_start = line_nums[1]
+        line_end = line_nums[2]
+
+        results = []        
+
+        # Open the file and read just the specified lines.        
+        with open(filename) as fp:
+            for i, line in enumerate(fp):
+                # 'i' starts at 0 but line numbers start at 1.
+                line_num = i + 1
+                
+                if line_num > line_end:
+                    break
+                
+                if line_num >= line_start:
+                    results.append(line)
+    
+        return results
      
     def save(self, save_dir='./'):
         """
