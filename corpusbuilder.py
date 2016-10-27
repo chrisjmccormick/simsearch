@@ -21,19 +21,23 @@ class CorpusBuilder(object):
     into a gensim corpus (that is, a collection of vectors representing the
     documents).  
     
-    To use the CorpusBuilder with your documents, you will need to:
-      * Convert your documents to a plain text representation (copy and paste
-        into notepad works well enough).
-      * Provide a representative "title" for each document, which will be used
-        to refer to the document, e.g., in search results.
+    Document Format
+    ===============
+    
+    To use the CorpusBuilder with your source documents, you will need to:
+      * Convert your source documents to a plain text representation (copy and 
+        paste into notepad is one simple approach, but tools also exist).
       * If you want to create separate vectors for different paragraphs or 
-        sections of your documents, you will need to write code to split them
-        up.
+        sections of your source documents, you will need to write your own code 
+        to split them up and provide them to the corpus builder as separate 
+        "documents"
     
     The CorpusBuilder will tokenize the documents for you using NLTK, so you
     do not need to remove punctuation, whitespace, etc.
-    
-    The intended useage is as follows:
+
+    Intended Usage
+    ==============    
+    The intended usage is as follows:
         1. Create a CorpusBuilder object.
         2. Call `setStopWordList` to provide the list of stop words.
         3. Call `addDocument` for each doc or piece of text in your corpus.
@@ -54,10 +58,31 @@ class CorpusBuilder(object):
     
     Once the corpus has been built, you cannot call `addDocument`.
     
+    Document Metadata
+    =================    
+    There are several pieces of metadata you can provide for each document,
+    when calling `addDocument` (though they are all optional).
+      * Document title: A string to represent the document, which can be
+        useful when presenting search results.
+      * Document file path & line numbers: If your source documents are 
+        plain text, you can provide the path to the original source file and 
+        the line numbers corresponding to the "document". This can be useful
+        as another way to display a search result. The CorpusBuilder even 
+        includes functions for reading the source file and retrieving the text 
+        on the specified line numbers.
+      * Document tags: You can supply a list of tags to associate with each
+        document. In SimSearch, you can then search for more documents similar
+        to those with a specified tag.      
+    
+    Saving & Loading
+    ================
     The final, built CorpusBuilder can be saved to and loaded from a directory
-    using `save` and `load` (Note: Only *built* corpuses can be saved).
-    The intended useage, however is to simply save and load the SimSearch 
-    object (which also saves the underlying CorpusBuilder).
+    using `save` and `load`. The typical useage, however is to simply save and
+    load the SimSearch object (which also saves the underlying CorpusBuilder).
+    
+    When saving the CorpusBuilder, only the dictionary, feature vectors, and
+    and document metadata are saved. The original text is not saved in any
+    form.
         
     """
     def __init__(self):
