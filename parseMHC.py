@@ -69,7 +69,8 @@ for mhcFile in mhcFiles:
                 entry += " " + line
                 line_count += 1
         
-        # End of file reached.        
+        # End of file reached.
+        doc_end = lineNum - 1 + 1;        
         cb.addDocument(entry_title, [entry], entry_tags, filename=('./mhc/' + mhcFile),doc_start=doc_start, doc_end=doc_end)
 
 print 'Done.'
@@ -99,9 +100,3 @@ if not exists('./mhc_corpus/'):
 ssearch.save(save_dir='./mhc_corpus/')
 
 print 'Done!'
-
-lines = []    
-for line_nums in cb.doc_line_nums:
-    fileID = line_nums[0]
-    line = cb.files[fileID] + '  Lines: ' + str(line_nums[1]) + ' - ' + str(line_nums[2])
-    lines.append(line)
