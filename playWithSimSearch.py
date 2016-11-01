@@ -27,9 +27,11 @@ lines = ssearch.cb.printDocSourcePretty(doc_id=73, max_lines=5)
 print ''
 
 # Perform the search
-results = ssearch.findSimilarToDoc(doc_id=73, topn=3)
+results = ssearch.findSimilarToDoc(doc_id=73, topn=1)
 
 # Print the top results
 ssearch.printResultsBySourceText(results, max_lines=8)
 
+# Interpret the top match.
+ssearch.interpretMatch(73, results[0][0])
 
