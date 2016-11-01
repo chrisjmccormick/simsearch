@@ -6,6 +6,7 @@ Created on Mon Oct 17 21:19:15 2016
 """
 
 import nltk
+import textwrap
 from gensim import corpora
 from gensim.models import TfidfModel
 from collections import defaultdict
@@ -336,7 +337,40 @@ class CorpusBuilder(object):
                     results.append(line)
     
         return results
-     
+    
+    def printDocSourcePretty(self, doc_id, max_lines=8, indent='    '):
+        """
+        Prints the original source lines for the document 'doc_id'.
+        
+        This function leverages the 'textwrap' Python module to limit the 
+        print output to 80 columns.        
+        """
+            
+        # Read in the document.
+        lines = self.readDocSource(doc_id)
+            
+        # Limit the result to 'max_lines'.
+        truncated = False
+        if len(lines) > max_lines:
+            truncated = True
+            lines = lines[0:max_lines]
+
+        # Convert the list of strings to a single string.
+        lines = '\n'.join(lines)
+
+        # Remove indentations in the source text.
+        dedented_text = textwrap.dedent(lines).strip()
+        
+        # Add an ellipsis to the end to show we truncated the doc.
+        if truncated:
+            dedented_text = dedented_text + ' ...'
+        
+        # Wrap the text so it prints nicely--within 80 columns.
+        # Print the text indented slightly.
+        pretty_text = textwrap.fill(dedented_text, initial_indent=indent, subsequent_indent=indent, width=80)
+        
+        print pretty_text   
+    
     def save(self, save_dir='./'):
         """
         Write out the built corpus to a save directory.

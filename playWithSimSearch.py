@@ -21,22 +21,15 @@ print 'Searching for docs similar to document number 73...'
 print ''
 
 # Display the source document.
-lines = ssearch.cb.readDocSource(doc_id=73)
-for i in range(0, 5):
-    print '    ', lines[i].replace('\n', ' ')
-print '        ...'
+print 'Doc 73:'
+lines = ssearch.cb.printDocSourcePretty(doc_id=73, max_lines=5)
+
 print ''
 
-# Perform the search.
-results = ssearch.findSimilarToDoc(doc_id=73, topn=1)
+# Perform the search
+results = ssearch.findSimilarToDoc(doc_id=73, topn=3)
 
-# Print the top result
-ssearch.printResultsByLineNumbers(results)
-print ''
+# Print the top results
+ssearch.printResultsBySourceText(results, max_lines=8)
 
-lines = ssearch.cb.readDocSource(doc_id=results[0][0])
-for i in range(0, 5):
-    print '    ', lines[i].replace('\n', ' ')
-print '        ...'
-print ''
 

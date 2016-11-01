@@ -5,6 +5,7 @@ Created on Fri Oct 14 21:00:58 2016
 @author: Chris
 """
 
+import textwrap
 from gensim.models import LsiModel
 from gensim import similarities
 from corpusbuilder import CorpusBuilder
@@ -220,6 +221,29 @@ class SimSearch(object):
             line_nums = self.cb.getDocLocation(results[i][0])
                 
             print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
+    
+    def printResultsBySourceText(self, results, max_lines):
+        """
+        Print the supplied list of search results with their original source
+        text.
+        """
+        print 'Most similar documents:\n'
+        for i in range(0, len(results)):            
+            # Print the similarity value followed by the source file and line
+            # numbers.            
+            line_nums = self.cb.getDocLocation(results[i][0])
+                
+            print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
+
+            # Call down to the CorpusBuilder to print out the doc.
+            self.cb.printDocSourcePretty(results[i][0])
+            
+            # Separate the results with a line.
+            if len(results) > 1:
+                print '\n'
+                print '--------------------------------------------------------------------------------'
+                print '\n'
+                
     
     def save(self, save_dir='./'):
         """
