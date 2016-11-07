@@ -245,9 +245,9 @@ class SimSearch(object):
         # print 'Total word contributions:', np.sum(word_sims)  
         return word_sims
 
-    def interpretMatch(self, id1, id2):
+    def interpretMatch(self, id1, id2, topn=10):
         """
-        Displays the top 5 words in each document which contribute to the 
+        Displays the topn words in each document which contribute to the 
         total similarity between the two specified documents.
         """
 
@@ -257,8 +257,8 @@ class SimSearch(object):
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop 5 words in doc', id1, 'which contribute to similarity:'
-        for i in range(0, 5):
+        print '\nTop', topn, 'words in doc', id1, 'which contribute to similarity:'
+        for i in range(0, topn):
             word_id = word_sims[i][0]
             
             print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
@@ -269,8 +269,8 @@ class SimSearch(object):
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop 5 words in doc', id2, 'which contribute to similarity:'
-        for i in range(0, 5):
+        print '\nTop', topn, 'words in doc', id2, 'which contribute to similarity:'
+        for i in range(0, topn):
             word_id = word_sims[i][0]
             
             print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
@@ -317,7 +317,7 @@ class SimSearch(object):
             print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
 
             # Call down to the CorpusBuilder to print out the doc.
-            self.cb.printDocSourcePretty(results[i][0])
+            self.cb.printDocSourcePretty(results[i][0], max_lines)
             
             # Separate the results with a line.
             if len(results) > 1:
