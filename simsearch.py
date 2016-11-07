@@ -124,7 +124,28 @@ class SimSearch(object):
         
         # Pass the call down.        
         return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False)
+    
+    def findSimilarToFile(self, filename, topn=10):
+        """
+        Find documents in the corpus similar to the provided text file.
         
+        `filename` should be a valid path to a file. The entire file will be
+        read, parsed, tokenized, and converted to a vector.
+        
+        Returns the results as a list of tuples in the form:
+            (doc_id, similarity_value)
+        """
+
+        # Open the file and read all lines.        
+        with open(filename) as f:
+            text = f.readlines()
+
+        # Combine the lines into a single string.
+        text = " ".join(text)
+    
+        # Pass the call down to the findSimilarToText
+        return self.findSimilarToText(text, topn)
+    
         
     def findMoreOfTag(self, tag, topn=10, verbose=True):
         """
