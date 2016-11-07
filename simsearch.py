@@ -235,16 +235,19 @@ class SimSearch(object):
         return vec
 
 
-    def getSimilarityByWord(self, id1, id2):
+    def getSimilarityByWord(self, vec1_tfidf, vec2_tfidf):
         """
-        Calculates the individual contribution of each word in document 'id1' to
-        the total similarity between documents 'id1' and 'id2'.
+        Calculates the individual contribution of each word in document 1 to
+        the total similarity between documents 1 and 2.
+        
+        Returns a list of tuples in the form:
+            (word_id, sim_value)
         """    
         # Get the tf-idf and LSI vectors for the two documents, and convert them to
         # dense representations.        
-        vec1_lsi = self.sparseToDense(self.lsi[self.cb.corpus_tfidf[id1]], self.lsi.num_topics)
-        vec2_lsi = self.sparseToDense(self.lsi[self.cb.corpus_tfidf[id2]], self.lsi.num_topics)
-        vec1_tfidf = self.sparseToDense(self.cb.corpus_tfidf[id1], self.cb.getVocabSize())
+        vec1_lsi = self.sparseToDense(self.lsi[vec1_tfidf], self.lsi.num_topics)
+        vec2_lsi = self.sparseToDense(self.lsi[vec2_tfidf], self.lsi.num_topics)
+        vec1_tfidf = self.sparseToDense(vec1_tfidf, self.cb.getVocabSize())
         #vec2_tfidf = self.sparseToDense(self.cb.corpus_tfidf[id2], self.cb.getVocabSize())    
 
         # Calculate the norms of the two LSI vectors.
@@ -266,31 +269,33 @@ class SimSearch(object):
         # print 'Total word contributions:', np.sum(word_sims)  
         return word_sims
 
-    def interpretMatch(self, id1, id2, topn=10):
+    def interpretMatch(self, vec1_tfidf, vec2_tfidf, topn=10):
         """
-        Displays the topn words in each document which contribute to the 
+        Displays the `topn` words in each document which contribute to the 
         total similarity between the two specified documents.
         """
 
-        # Calculate the contribution of each word in *id1* to the similarity.        
-        word_sims = self.getSimilarityByWord(id1, id2)
+        
+
+        # Calculate the contribution of each word in doc 1 to the similarity.        
+        word_sims = self.getSimilarityByWord(vec1_tfidf, vec2_tfidf)
         
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop', topn, 'words in doc', id1, 'which contribute to similarity:'
+        print '\nTop', topn, 'words in doc 1 which contribute to similarity:'
         for i in range(0, topn):
             word_id = word_sims[i][0]
             
             print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
 
-        # Calculate the contribution of each word in *id2* to the similarity.
-        word_sims = self.getSimilarityByWord(id2, id1)
+        # Calculate the contribution of each word in doc 2 to the similarity.
+        word_sims = self.getSimilarityByWord(vec2_tfidf, vec1_tfidf)
         
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop', topn, 'words in doc', id2, 'which contribute to similarity:'
+        print '\nTop', topn, 'words in doc 2 which contribute to similarity:'
         for i in range(0, topn):
             word_id = word_sims[i][0]
             

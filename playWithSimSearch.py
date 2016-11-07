@@ -32,6 +32,10 @@ results = ssearch.findSimilarToDoc(doc_id=73, topn=1)
 # Print the top results
 ssearch.printResultsBySourceText(results, max_lines=8)
 
+# Retrieve the tf-idf vectors for the input document and it's closest match.
+vec1_tfidf = ssearch.cb.getDocTfidfVector(73)
+vec2_tfidf = ssearch.cb.getDocTfidfVector(results[0][0])
+
 # Interpret the top match.
-ssearch.interpretMatch(73, results[0][0])
+ssearch.interpretMatch(vec1_tfidf, vec2_tfidf)
 

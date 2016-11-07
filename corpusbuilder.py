@@ -271,7 +271,12 @@ class CorpusBuilder(object):
         
         # Convert the bag-of-words representation to tf-idf
         return self.tfidf_model[bow_vec]
-        
+    
+    def getDocTfidfVector(self, doc_id):
+        """
+        Return the tf-idf vector for the specified document.
+        """        
+        return self.corpus_tfidf[doc_id]
         
     def printTopNWords(self, topn=10):
         """
