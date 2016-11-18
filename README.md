@@ -29,7 +29,7 @@ You'll need to install:
 
 I've provided an example corpus to demonstrate the use of SimSearch. 
 
-The sample document collection is an exhaustive Biblical commentary written around 1710 by Matthew Henry. His entire commentary is available online in plain text, and is public domain. His thoughts are divided into subsections which are neatly separated by blank lines. This allowed me to parse them easily, and I treat each subsection as a separate "document". This creates a total of 31,154 documents! That man spent a lot of time writing...
+The sample document collection is an exhaustive Biblical commentary written around 1710 by Matthew Henry. His entire commentary is available online in plain text, and is public domain. His thoughts are divided into subsections which are neatly separated by blank lines. This allowed me to parse them easily, and I treat each subsection as a separate "document". This creates a total of 30,707 documents! That man spent a lot of time writing...
 
 Here are the steps to run the example.
 
