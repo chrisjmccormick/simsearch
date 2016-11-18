@@ -119,7 +119,16 @@ class CorpusBuilder(object):
         # The call to f.read().splitlines() reads the lines without the newline
         # char.       
         with open(stop_words_file) as f:
-            self.stoplist = set(f.read().splitlines())        
+            lines = f.read().splitlines()
+            
+            stoplist = []            
+            
+            # Decode the stop words            
+            for line in lines:
+                stoplist.append(line.decode(enc_format))
+                
+            # Convert to a set representation.    
+            self.stoplist = set(stoplist)
     
     def addDocument(self, title, lines, tags=[], filename=None, doc_start=None, doc_end=None):
         """
