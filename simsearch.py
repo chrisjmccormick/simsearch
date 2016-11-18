@@ -275,8 +275,6 @@ class SimSearch(object):
         total similarity between the two specified documents.
         """
 
-        
-
         # Calculate the contribution of each word in doc 1 to the similarity.        
         word_sims = self.getSimilarityByWord(vec1_tfidf, vec2_tfidf)
         
@@ -301,6 +299,37 @@ class SimSearch(object):
             
             print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
 
+    def getTopWordsInCluster(self, doc_ids, topn=10):
+        """
+        Returns the most significant words in a specified group of documents.
+        
+        This is accomplished by summing together the tf-idf vectors for all the
+        documents, then sorting the tf-idf values in descending order.
+        """
+        # Create a vector to hold the sum
+        tfidf_sum = np.zeros(self.cb.getVocabSize())
+        
+        for doc_id in doc_ids:
+            
+            # Get the tf-idf vector for this document, and convert it to
+            # its dense representation.
+            vec_tfidf = self.cb.getDocTfidfVector(doc_id)
+            vec_tfidf = self.sparseToDense(vec_tfidf, self.cb.getVocabSize())
+            
+            # Add the tf-idf vector to the sum.
+            tfidf_sum += vec_tfidf
+
+        # Sort the per-word tf-idf values, biggest to smallest.    
+        word_ids = sorted(enumerate(tfidf_sum), key=lambda item: -item[1])
+        
+        # Create a list of the top words (as strings)
+        top_words = []        
+        for i in range(0, topn):
+            word_id = word_ids[i][0]
+            top_words.append(self.cb.dictionary[word_id])
+            
+        return top_words
+        
 
     def printResultsByTitle(self, results):
         """
