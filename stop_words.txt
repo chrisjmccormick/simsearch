@@ -216,6 +216,7 @@ hardly
 has
 hasn't
 hast
+hath
 have
 haven't
 having
@@ -475,6 +476,7 @@ right
 run
 s
 said
+saith
 same
 saw
 say
@@ -722,6 +724,7 @@ wouldnt
 www
 x
 y
+ye
 yes
 yet
 you
