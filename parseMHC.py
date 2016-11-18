@@ -2,7 +2,27 @@ from corpusbuilder import CorpusBuilder
 from simsearch import SimSearch
 from os import listdir, makedirs
 from os.path import isfile, join, exists
+import re
 
+def applyRegExFilters(line):
+    """
+    Remove tokens matching some regex filters.
+    
+    The MHC text includes a number of patterns which need to be filtered out.
+    """
+    
+    # Remove line breaks of the form "___________"
+    line = re.sub('_+', ' ', line)
+
+    # Remove verse references like "ver. 5-7" or "ver. 25, 26"
+    line = re.sub('ver\. \d+(-|, )*\d*', ' ', line)    
+
+    # Remove verse numbers of the form "18.", "2.", etc., as well as any other
+    # remaining numbers.
+    line = re.sub('\d+\.?', ' ', line)
+    
+    return line
+    
 
 # Get all the source text files.
 mhcFiles = [f for f in listdir('./mhc/') if isfile(join('./mhc/', f))]
@@ -64,6 +84,9 @@ for mhcFile in mhcFiles:
                 if not entry_title:                
                     entry_title = filename + ' - ' + line       
                     doc_start = lineNum + 1
+                
+                # Run some reg ex filters to remove some tokens.
+                line = applyRegExFilters(line)                
                 
                 # Append the words to the entry, separated by spaces.
                 entry += " " + line
