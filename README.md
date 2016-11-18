@@ -22,15 +22,28 @@ SimSearch consists of two classes:
 You'll need to install:
 
 1. [gensim](https://radimrehurek.com/gensim/install.html) (for topic modeling)
-2. [NLTK](http://www.nltk.org/install.html)
-3. The Punkt Tokenizer Models (for tokenizing) using the NLTK downloader (Run nltk.download() in Python to launch the downloader).
+2. [sklearn](http://scikit-learn.org/stable/install.html) (for clustering)
+3. [NLTK](http://www.nltk.org/install.html) and the Punkt Tokenizer Models (for tokenizing).
+
+### Punkt Installation
+Once you've installed NLTK, type the following in Python to launch the NLTK downloader utility.
+
+{% highlight text %}
+>> import nltk
+
+>> nltk.download()
+{% endhighlight %}
+
+Then download `punkt` from the Models tab.
+![NLTK Downloader](http://www.mccormickml.com/assets/nltk/nltk_downloader_punkt.png)
 
 ## Example Code
 
 I've provided an example corpus to demonstrate the use of SimSearch. 
 
-The sample document collection is an exhaustive Biblical commentary written around 1710 by Matthew Henry. His entire commentary is available online in plain text, and is public domain. His thoughts are divided into subsections which are neatly separated by blank lines. This allowed me to parse them easily, and I treat each subsection as a separate "document". This creates a total of 30,707 documents! That man spent a lot of time writing...
+The sample document collection is an exhaustive Biblical commentary written around 1710 by Matthew Henry. His entire commentary is [available online](https://www.ccel.org/ccel/henry/mhc) in plain text, and is public domain. His thoughts are divided into subsections which are neatly separated by blank lines. This allowed me to parse them easily, and I treat each subsection as a separate "document". This creates a total of 30,707 documents! That man spent a lot of time writing...
 
+### Running the Examples
 Here are the steps to run the example.
 
 Step 1: Unzip mhc.zip (under `/mhc/`, MHC = "Matthew Henry's Commentary") so that you have `/mhc/mhc1.txt`, `/mhc/mhc2.txt`, ... `/mhc/mhc6.txt`.
@@ -38,6 +51,14 @@ Step 1: Unzip mhc.zip (under `/mhc/`, MHC = "Matthew Henry's Commentary") so tha
 Step 2: Run the script `parseMHC.py`. This will use CorpusBuilder to create a gensim corpus from the commentary. This will take a couple minutes. Finally, the resulting CorpusBuilder object is used to create a SimSearch object, and this is saved to the subdirectory `/mhc_corpus/`.
 
 Step 3: Run the script `playWithSimSearch.py`. This will load the SimSearch object from disk, then perform some example searches.
+
+### Description of Examples
+Inside `playWithSimSearch.py` you'll find two examples (each one defined in a separate subroutine, so you can choose which to run).
+
+*Example 1*: This example takes a particular section of the MHC text, and searches for closest matches to it in the corpus. It also interprets the top match, displaying which words contributed most to the similarity.
+
+*Example 2*: This example clusters the entire MHC corpus with k-means and displays the top words for each resulting cluster.
+
 
 ## Building a Corpus - From Plain Text to Vectors.
 The CorpusBuilder takes a collection of documents in the form of unprocessed plain text, and converts them into bag-of-words style vectors. 
@@ -69,14 +90,6 @@ Option 1: `findSimilarToDoc` allows you to take one of the documents _from the c
 
 Option 2: `findSimilarToText` allows you to provide new input text (that does not have to be from the corpus), and finds conceptually similar documents in the corpus. 
 
-## Punkt Installation
-Once you've installed NLTK, type the following in Python to launch the NLTK downloader utility.
 
->> import nltk
-
->> nltk.download()
-
-Then download `punkt` from the Models tab.
-![NLTK Downloader](http://www.mccormickml.com/assets/nltk/nltk_downloader_punkt.png)
 
 
