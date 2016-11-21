@@ -323,7 +323,7 @@ class CorpusBuilder(object):
         
         # If no doc ids were supplied, search the entire corpus.
         if not docs:
-            docs = range(0, len(self.tfidf_corpus))
+            docs = range(0, len(self.corpus_tfidf))
     
         # Convert all the keywords to their IDs.
         # Force them to lower case in the process.
@@ -331,7 +331,16 @@ class CorpusBuilder(object):
         exclude_ids = []
     
         for word in includes:
-            include_ids.append(self.getIDForWord(word.lower()))
+            # Lookup the ID for the word.            
+            word_id = self.getIDForWord(word.lower())            
+            
+            # Verify the word exists in the dictionary.
+            if word_id == -1:
+                raise 'Word', word.lower(), 'not in dictionary!'
+            
+            # Add the word id to the list.
+            include_ids.append(word_id)
+            
         for word in excludes:
             exclude_ids.append(self.getIDForWord(word.lower()))
         
@@ -340,14 +349,17 @@ class CorpusBuilder(object):
         # For each of the documents to search...
         
         for doc_id in docs:
-            # Get the tf-idf vector for the next document.
+            # Get the sparse tf-idf vector for the next document.
             vec_tfidf = self.corpus_tfidf[doc_id]
+            
+            # Create a list of the word ids in this document.
+            doc_words = [tfidf[0] for tfidf in vec_tfidf]
             
             match = True
             
             # Check for words that must be present.
             for word_id in include_ids:
-                if vec_tfidf[word_id] == 0:
+                if not word_id in doc_words:
                     match = False
                     break
             
@@ -357,13 +369,15 @@ class CorpusBuilder(object):
     
             # Check for words that must not be present.
             for word_id in exclude_ids:
-                if not vec_tfidf[word_id] == 0:
+                if word_id in doc_words:
                     match = False
                     break
             
             # If we passed the 'excludes' test, this is a valid result.
             if match:
                 results.append(doc_id)
+        
+        return results
             
     
     def printTopNWords(self, topn=10):
