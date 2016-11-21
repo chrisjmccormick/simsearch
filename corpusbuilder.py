@@ -303,7 +303,69 @@ class CorpusBuilder(object):
         Return the tf-idf vector for the specified document.
         """        
         return self.corpus_tfidf[doc_id]
+
+    def keywordSearch(self, includes=[], excludes=[], docs=[])
+        """
+        Performs a boolean keyword search over the corpus.
         
+        All words in the dictionary are lower case. This function will convert
+        all supplied keywords to lower case.
+        
+        Parameters:
+            includes    A list of words (as strings) that the documents 
+                        *must include*.
+            excludes    A list of words (as strings) that the documents
+                        *must not include*.
+            docs        The list of documents to search in, represented by
+                        by doc_ids. If this list is empty, the entire corpus
+                        is searched.
+        """
+        
+        # If no doc ids were supplied, search the entire corpus.
+        if not docs:
+            docs = range(0, len(self.tfidf_corpus))
+    
+        # Convert all the keywords to their IDs.
+        # Force them to lower case in the process.
+        include_ids = []
+        exclude_ids = []
+    
+        for word in includes:
+            include_ids.append(self.getIDForWord(word.lower()))
+        for word in excludes:
+            exclude_ids.append(self.getIDForWord(word.lower()))
+        
+        results = []
+    
+        # For each of the documents to search...
+        
+        for doc_id in docs:
+            # Get the tf-idf vector for the next document.
+            vec_tfidf = self.corpus_tfidf[doc_id]
+            
+            match = True
+            
+            # Check for words that must be present.
+            for word_id in include_ids:
+                if vec_tfidf[word_id] == 0:
+                    match = False
+                    break
+            
+            # If we failed the 'includes' test, skip to the next document.
+            if not match:
+                continue
+    
+            # Check for words that must not be present.
+            for word_id in exclude_ids:
+                if not vec_tfidf[word_id] == 0:
+                    match = False
+                    break
+            
+            # If we passed the 'excludes' test, this is a valid result.
+            if match:
+                results.append(doc_id)
+            
+    
     def printTopNWords(self, topn=10):
         """
         Print the 'topn' most frequent words in the corpus.
@@ -350,7 +412,7 @@ class CorpusBuilder(object):
         
         # If it wasn't found, return -1.
         return -1
-    
+       
     def getDocLocation(self, doc_id):
         """
         Return the filename and line numbers that 'doc_id' came from.
