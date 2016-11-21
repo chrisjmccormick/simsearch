@@ -332,6 +332,24 @@ class CorpusBuilder(object):
         filtering).
         """
         return len(self.dictionary.keys())
+        
+    def getIDForWord(self, input_word):
+        """
+        Lookup the ID for a specific word.
+        
+        Returns -1 if the word isn't in the dictionary.
+        """
+        
+        # All words in dictionary are lower case.
+        input_word = input_word.lower()
+        
+        # Search through the words in the dictionary to find the input.
+        for id, word in self.dictionary.iteritems():
+            if word == input_word:
+                return id
+        
+        # If it wasn't found, return -1.
+        return -1
     
     def getDocLocation(self, doc_id):
         """
