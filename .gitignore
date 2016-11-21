@@ -69,3 +69,5 @@ mhc_corpus/lsi.model.projection
 confess.txt
 mhc_corpus/doc_line_nums.pickle
 mhc_backup/mhc1.txt
+corpusbuilder.py.bak
+simsearch.py.bak

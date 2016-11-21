@@ -248,7 +248,7 @@ class CorpusBuilder(object):
         self.corpus_tfidf = self.tfidf_model[corpus]
     
     
-    def newTextToTfidfVector(self, text):
+    def getTfidfForText(self, text):
         """
         This function takes new input `text` (not part of the original corpus),
         and processes it into a tf-idf vector.
@@ -261,8 +261,11 @@ class CorpusBuilder(object):
             try:    
                 text = text.decode(enc_format)        
             except:
-                print 'Failed to decode input text:', text
-                raise
+                print '======== Failed to decode input text! ========'
+                print 'Make sure text is encoded in', enc_format
+                print 'Input text:'
+                print text
+                return []
         
         # If the string ends in a newline, remove it.
         text = text.replace('\n', ' ')
@@ -281,7 +284,21 @@ class CorpusBuilder(object):
         # Convert the bag-of-words representation to tf-idf
         return self.tfidf_model[bow_vec]
     
-    def getDocTfidfVector(self, doc_id):
+    def getTfidfForFile(self, filename):
+        """
+        Convert the text in the provided file to a tf-idf vector.
+        """
+        # Open the file and read all lines.        
+        with open(filename) as f:
+            text = f.readlines()
+
+        # Combine the lines into a single string.
+        text = " ".join(text)
+
+        # Pass the text down.
+        return self.getTfidfForText(text)
+    
+    def getTfidfForDoc(self, doc_id):
         """
         Return the tf-idf vector for the specified document.
         """        

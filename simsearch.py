@@ -120,7 +120,7 @@ class SimSearch(object):
             (doc_id, similarity_value)
         """
         # Parse the input text and create a tf-idf representation.        
-        tfidf_vec = self.cb.newTextToTfidfVector(text)
+        tfidf_vec = self.cb.getTfidfForText(text)
         
         # Pass the call down.        
         return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False)
@@ -136,15 +136,11 @@ class SimSearch(object):
             (doc_id, similarity_value)
         """
 
-        # Open the file and read all lines.        
-        with open(filename) as f:
-            text = f.readlines()
-
-        # Combine the lines into a single string.
-        text = " ".join(text)
+        # Convert the file to tf-idf.
+        input_tfidf = self.cb.getTfidfForFile(filename)
     
-        # Pass the call down to the findSimilarToText
-        return self.findSimilarToText(text, topn)
+        # Pass the call down.
+        return self.findSimilarToVector(input_tfidf, topn)
     
         
     def findMoreOfTag(self, tag, topn=10, verbose=True):
@@ -358,7 +354,7 @@ class SimSearch(object):
                 
             print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
     
-    def printResultsBySourceText(self, results, max_lines):
+    def printResultsBySourceText(self, results, max_lines=10):
         """
         Print the supplied list of search results with their original source
         text.
