@@ -304,7 +304,7 @@ class CorpusBuilder(object):
         """        
         return self.corpus_tfidf[doc_id]
 
-    def keywordSearch(self, includes=[], excludes=[], docs=[])
+    def keywordSearch(self, includes=[], excludes=[], docs=[]):
         """
         Performs a boolean keyword search over the corpus.
         
