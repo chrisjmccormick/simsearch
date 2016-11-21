@@ -309,7 +309,7 @@ class SimSearch(object):
             
             # Get the tf-idf vector for this document, and convert it to
             # its dense representation.
-            vec_tfidf = self.cb.getDocTfidfVector(doc_id)
+            vec_tfidf = self.cb.getTfidfForDoc(doc_id)
             vec_tfidf = self.sparseToDense(vec_tfidf, self.cb.getVocabSize())
             
             # Add the tf-idf vector to the sum.

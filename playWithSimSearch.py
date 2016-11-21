@@ -33,8 +33,8 @@ def runExample1(ssearch):
     ssearch.printResultsBySourceText(results, max_lines=8)
     
     # Retrieve the tf-idf vectors for the input document and it's closest match.
-    vec1_tfidf = ssearch.cb.getDocTfidfVector(73)
-    vec2_tfidf = ssearch.cb.getDocTfidfVector(results[0][0])
+    vec1_tfidf = ssearch.cb.getTfidfForDoc(73)
+    vec2_tfidf = ssearch.cb.getTfidfForDoc(results[0][0])
     
     # Interpret the top match.
     ssearch.interpretMatch(vec1_tfidf, vec2_tfidf)
