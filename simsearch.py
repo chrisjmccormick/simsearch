@@ -24,25 +24,16 @@ class SimSearch(object):
     similarity searches.
     """
     
-    def __init__(self, corpus_builder):
+    def __init__(self, key_search):
         """
-        Initialize the SimSearch with a CorpusBuilder object, which holds
-        the processed and vectorized corpus.
+        Initialize the SimSearch with a KeySearch object, which holds:
+            - The dictionary
+            - The tf-idf model and corpus
+            - The document metadata.
         
         """        
-        self.cb = corpus_builder
-    
-    def initWithoutCB(self, corpus_tfidf=None, titles=None, dictionary=None, tagsToEntries=None):
-        """
-        SimSearch is generally intented to be used along with a CorpusBuilder,
-        but it is also possible to provide the required objects separately.
-        TODO - This needs to be implemented.
-        """        
-        #self.corpus_tfidf = corpus_tfidf
-        #self.titles = titles
-        #self.dictionary = dictionary
-        #self.tagsToEntries = tagsToEntries
-        
+        self.ksearch = key_search
+           
 
     def trainLSI(self, num_topics=100):
         """
