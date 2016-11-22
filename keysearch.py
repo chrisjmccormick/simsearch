@@ -19,7 +19,7 @@ enc_format='utf-8'
 class KeySearch(object):
     
     def __init__(self, dictionary, tfidf_model, corpus_tfidf, titles, 
-                  tagsToEntries, entriesToTags, files, doc_line_nums):
+                  tagsToDocs, docsToTags, files, doc_line_nums):
         """
         KeySearch requires a completed gensim corpus, along with some 
         additional metadata
@@ -29,9 +29,9 @@ class KeySearch(object):
             tfidf_model - gensim TfidfModel
             corpus_tfidf - gensim corpora
             titles - List of string titles.
-            tagsToEntries -
-            entriesToTags -
-            files -
+            tagsToDocs - Mapping of tags to doc ids
+            docsToTags - List of tags for each doc
+            files - Unique files in the corpus
             doc_line_nums - 
         """
         self.dictionary = dictionary
@@ -41,8 +41,8 @@ class KeySearch(object):
         self.titles = titles
     
         # Create mappings for the entry tags.
-        self.tagsToEntries = tagsToEntries
-        self.entriesToTags = entriesToTags
+        self.tagsToDocs = tagsToDocs
+        self.docsToTags = docsToTags
 
         self.files = files
         self.doc_line_nums = doc_line_nums
@@ -71,11 +71,11 @@ class KeySearch(object):
 
         # Convert everything to lowercase, then use NLTK to tokenize.
         tokens = nltk.word_tokenize(text.lower())
-       
-        # Remove stop words.
-        # TODO - I think I shouldn't need to do this, it was only for building
-        #       the dictionary. 
-        #tokens = [word for word in tokens if word not in self.stoplist]
+
+        # We don't need to do any special filtering of tokens here (stopwords, 
+        # infrequent words, etc.). If a token is not in the dictionary, it is 
+        # simply ignored. So the dictionary effectively does the token 
+        # filtering for us.
 
         # Convert the tokenized text into a bag of words representation.
         bow_vec = self.dictionary.doc2bow(tokens) 
@@ -300,7 +300,7 @@ class KeySearch(object):
         Write out the built corpus to a save directory.
         """
         # Store the tag tables.
-        pickle.dump((self.tagsToEntries, self.entriesToTags), open(save_dir + 'tag-tables.pickle', 'wb'))
+        pickle.dump((self.tagsToDocs, self.docsToTags), open(save_dir + 'tag-tables.pickle', 'wb'))
         
         # Store the document titles.
         pickle.dump(self.titles, open(save_dir + 'titles.pickle', 'wb'))
@@ -327,19 +327,24 @@ class KeySearch(object):
         #                removing infrequent words. Final word counts are in
         #                the `dictionary` object.
         
-    def load(self, save_dir='./'):
+    @classmethod
+    def load(cls, save_dir='./'):
         """
         Load the corpus from a save directory.
         """
         tables = pickle.load(open(save_dir + 'tag-tables.pickle', 'rb'))
-        self.tagsToEntries = tables[0]
-        self.entriesToTags = tables[1]        
-        self.titles = pickle.load(open(save_dir + 'titles.pickle', 'rb'))
-        self.tfidf_model = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
-        self.corpus_tfidf = corpora.MmCorpus(save_dir + 'documents_tfidf.mm')
-        self.dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
-        self.files = pickle.load(open(save_dir + 'files.pickle', 'rb'))
-        self.doc_line_nums = pickle.load(open(save_dir + 'doc_line_nums.pickle', 'rb'))
+        tagsToDocs = tables[0]
+        docsToTags = tables[1]        
+        titles = pickle.load(open(save_dir + 'titles.pickle', 'rb'))
+        tfidf_model = TfidfModel.load(fname=save_dir + 'documents.tfidf_model')
+        corpus_tfidf = corpora.MmCorpus(save_dir + 'documents_tfidf.mm')
+        dictionary = corpora.Dictionary.load(fname=save_dir + 'documents.dict')
+        files = pickle.load(open(save_dir + 'files.pickle', 'rb'))
+        doc_line_nums = pickle.load(open(save_dir + 'doc_line_nums.pickle', 'rb'))
         
+        ksearch = KeySearch(dictionary, tfidf_model, 
+                            corpus_tfidf, titles, tagsToDocs,
+                            docsToTags, files, doc_line_nums) 
         
+        return ksearch
             

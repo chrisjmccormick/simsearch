@@ -1,5 +1,4 @@
 from corpusbuilder import CorpusBuilder
-from keysearch import KeySearch
 from simsearch import SimSearch
 from os import makedirs
 from os.path import exists
