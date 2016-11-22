@@ -87,26 +87,47 @@ class SimSearch(object):
                     
         return results
     
-    
-    def findSimilarToDoc(self, doc_id, topn=10):
+    def findSimilarToVectors(self, input_tfidfs, exclude_ids=[], topn=10):
         """
-        Find documents similar to the specified entry number in the corpus.
+        Find documents similar to a collection of input vectors.        
         
-        This will not return the input document in the results list.
-        
-        Returns the results as a list of tuples in the form:
-            (doc_id, similarity_value)
+        Combines the similarity scores from multiple query vectors.
         """
+        # Calculate the combined similarities for all input vectors.
+        sims_sum = []
         
-        # Find the most similar entries to 'doc_id'
-        #  1. Look up the tf-idf vector for the entry.
-        #  2. Project it onto the LSI vector space.
-        #  3. Compare the LSI vector to the entire collection.
-        tfidf_vec = self.cb.corpus_tfidf[doc_id]
+        for input_vec in input_tfidfs:
+            
+            # Calculate the similarities between this and all other entries.
+            sims = self.index[self.lsi[input_vec]]
         
-        # Pass the call down, specifying that the input is a part of the 
-        # corpus.
-        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=True)
+            # Accumulate the similarities across all input vectors.
+            if len(sims_sum) == 0:
+                sims_sum = sims
+            else:
+                sims_sum = np.sum([sims, sims_sum], axis=0)
+                    
+        # Sort the combined similarities.
+        sims_sum = sorted(enumerate(sims_sum), key=lambda item: -item[1])
+
+        # Look through the results until we've gathered 'topn' results.
+        results = []      
+        for i in range(0, len(sims_sum)):
+            
+            # Get the doc id for this result.
+            doc_id = sims_sum[i][0]    
+        
+            # If the result is not one of the inputs, and not in the exclude 
+            # list, it's a valid result.
+            if doc_id not in exclude_ids:
+                results.append(sims_sum[i])
+
+            # Break when we've gathered 'topn' results.
+            if len(results) == topn:
+                break
+                
+        return results
+   
     
     def findSimilarToText(self, text, topn=10):
         """
@@ -142,8 +163,28 @@ class SimSearch(object):
         # Pass the call down.
         return self.findSimilarToVector(input_tfidf, topn)
     
+    def findSimilarToDoc(self, doc_id, topn=10):
+        """
+        Find documents similar to the specified entry number in the corpus.
         
-    def findMoreOfTag(self, tag, topn=10, verbose=True):
+        This will not return the input document in the results list.
+        
+        Returns the results as a list of tuples in the form:
+            (doc_id, similarity_value)
+        """
+        
+        # Find the most similar entries to 'doc_id'
+        #  1. Look up the tf-idf vector for the entry.
+        #  2. Project it onto the LSI vector space.
+        #  3. Compare the LSI vector to the entire collection.
+        tfidf_vec = self.cb.corpus_tfidf[doc_id]
+        
+        # Pass the call down, specifying that the input is a part of the 
+        # corpus.
+        return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=True)    
+        
+    
+    def findMoreOfTag(self, tag, topn=10):
         """
         Find entries in the corpus which are similar to those tagged with 
         'tag'. That is, find more entries in the corpus that we might want to
@@ -163,54 +204,16 @@ class SimSearch(object):
         
         # Find all documents marked with 'tag'.
         input_ids = self.cb.tagsToEntries[tag]
-        
-        if verbose:
-            print '\nMost similar documents to "' + tag + '":'
-            print '\nInput documents:'
-        
-        # Calculate the combined similarities for all input vectors.
-        sims_sum = []
-        
-        for i in input_ids:
-            # Get the LSI vector for this document.    
-            input_vec = self.lsi[self.cb.corpus_tfidf[i]]
-        
-            print '  ' + self.cb.titles[i]
-        
-            # Calculate the similarities between this and all other entries.
-            sims = self.index[input_vec]
-        
-            # Accumulate the similarities across all input vectors.
-            if len(sims_sum) == 0:
-                sims_sum = sims
-            else:
-                sims_sum = np.sum([sims, sims_sum], axis=0)
-                    
-        # Sort the combined similarities.
-        sims_sum = sorted(enumerate(sims_sum), key=lambda item: -item[1])    
-        
-        
-        print '\nResults:'
 
-        results = []        
-        
-        shown = 0
-        for i in range(0, len(sims_sum)):
-            doc_id = sims_sum[i][0]    
-        
-            # If the result is not one of the inputs, and not a negative sample,
-            # show it.
-            if doc_id not in input_ids and doc_id not in exclude_ids:
-                
-                results.append(sims_sum[i])
-                print '  %.2f    %s' % (sims_sum[i][1], self.cb.titles[sims_sum[i][0]])
-                shown = shown + 1
-            
-            # Stop when we've displayed 'topn' results.
-            if shown == topn:
-                break
+        # Append the input ids to the list of those to exclude from the results
+        exclude_ids = exclude_ids + input_ids
 
-        return results
+        # Lookup the vectors for all of the input docs.        
+        input_vecs = [self.cb.getTfidfForDoc(doc_id) for doc_id in input_ids]
+        
+        # Pass the call down.
+        self.findSimilarToVecs(input_vecs, exclude_ids=exclude_ids, topn=topn)
+        
 
     def sparseToDense(self, sparse_vec, length):
         """
