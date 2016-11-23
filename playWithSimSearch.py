@@ -84,9 +84,10 @@ def runExample2(ksearch, ssearch):
 print('Loading the saved SimSearch and corpus...')
 (ksearch, ssearch) = SimSearch.load(save_dir='./mhc_corpus/')
 
-print('\n======== Example 1 ========\n')
-runExample1(ksearch, ssearch)
-print('\n======== Example 2 ========\n')
-runExample2(ksearch, ssearch)
+#print('\n======== Example 1 ========\n')
+#runExample1(ksearch, ssearch)
+#print('\n======== Example 2 ========\n')
+#runExample2(ksearch, ssearch)
 
-#results = ksearch.keywordSearch(includes=['sabbath'])
+
+#results = ksearch.keywordSearch(includes=[''])

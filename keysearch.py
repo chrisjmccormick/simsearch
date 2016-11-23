@@ -242,18 +242,17 @@ class KeySearch(object):
         
         Returns -1 if the word isn't in the dictionary.
         """
-        
+
         # All words in dictionary are lower case.
         input_word = input_word.lower()
         
-        # Search through the words in the dictionary to find the input.
-        for id, word in self.dictionary.iteritems():
-            if word == input_word:
-                return id
-        
-        # If it wasn't found, return -1.
-        return -1
-       
+        # First check if the word exists in the dictionary.
+        if not input_word in self.dictionary.values():
+            return -1            
+        # If it is, look up the ID.    
+        else:
+            return self.dictionary.token2id[input_word]
+               
     def getDocLocation(self, doc_id):
         """
         Return the filename and line numbers that 'doc_id' came from.
