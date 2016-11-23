@@ -9,8 +9,19 @@ The other key piece of functionality in this project is the automation of parsin
 
 I originally created these tools out of a desire to search my personal journals based on their topic rather than by keyword. Since I so often seem to forget the lessons life teaches me, I wanted to be able to find any past insights that might be relevant to the challenges I’m facing today. The idea is that I would take a journal entry which I wrote today, and search for past similar entries. In this case, each journal entry is a separate "document" in the corpus.
 
-* TOC
-{:toc}
+Contents
+========
+
+* [Framework](#framework)
+  * [CorpusBuilder](#corpusbuilder)
+  * [KeySearch](#keysearch)
+  * [SimSearch](#simsearch)
+* [Example Code](#exmaple-code)
+  * [Running the Examples](#running-the-examples)
+  * [Description of Examples](#description-of-examples)
+* [Installation and Dependencies](#installation-and-dependencies)
+  * [Punkt Installation](#punkt-installation)
+* [Converting Documents to Plain Text](#converting-documents-to-plain-text) 
 
 # Framework
 These tools are built around the powerful topic modeling framework in the [gensim](https://radimrehurek.com/gensim/) Python package by [Radim Rehurek](https://radimrehurek.com/).
@@ -74,7 +85,7 @@ Inside `playWithSimSearch.py` you'll find two examples (each one defined in a se
 *Example 2*: This example clusters the entire MHC corpus with k-means and displays the top words for each resulting cluster.
 
 
-# Installation & Dependencies
+# Installation and Dependencies
 
 You'll need to install:
 
