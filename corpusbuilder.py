@@ -35,10 +35,14 @@ class CorpusBuilder(object):
     The CorpusBuilder will tokenize the documents for you using NLTK, so you
     do not need to remove punctuation, whitespace, etc.
 
-    It's possible to create multiple "documents" from a single text file.
-    For example, you might choose to create a separate for every paragraph in
-    the file. You can specify a regular expression to use for matching the
-    beginnings of "documents" within the file. 
+    The CorpusBuilder contains a lot of functionality that is related to taking
+    a single .txt file and extracting multiple documents from it. This is
+    because it was originally used to parse books (where the whole book is in
+    one .txt file, but each paragraph is represented as a  separate "document")
+    and journals (where each journal entry is a separate "document"). 
+
+    You can specify a regular expression to use for matching the beginnings of
+    "documents" within the file. 
     
     Intended Usage
     ==============    

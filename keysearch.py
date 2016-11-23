@@ -18,6 +18,22 @@ enc_format='utf-8'
 
 class KeySearch(object):
     """
+    KeySearch, which is short for "keyword search" stores a completed gensim 
+    tf-idf corpus. Whereas SimSearch stores an LSI model, and only understands
+    conceptual relationships between documents, KeySearch actually knows what
+    words occur in each document.  
+
+    It has several key functions:
+      1. It has functions for converting new text sources (that is, texts not
+         already in the corpus) into tf-idf vectors.
+      2. It stores the corpus vocabulary in the form of a gensim dictionary.
+      3. It supports boolean keyword search (though this is NOT indexed!).
+      4. It stores the document metadata:
+           - Title
+           - Text source file
+           - Line numbers in source file
+           - Tags
+    
     
     Saving & Loading
     ================
