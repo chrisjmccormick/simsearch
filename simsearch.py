@@ -5,10 +5,9 @@ Created on Fri Oct 14 21:00:58 2016
 @author: Chris
 """
 
-import textwrap
 from gensim.models import LsiModel
 from gensim import similarities
-from corpusbuilder import CorpusBuilder
+from keysearch import KeySearch
 import numpy as np
 
 class SimSearch(object):
@@ -24,25 +23,16 @@ class SimSearch(object):
     similarity searches.
     """
     
-    def __init__(self, corpus_builder):
+    def __init__(self, key_search):
         """
-        Initialize the SimSearch with a CorpusBuilder object, which holds
-        the processed and vectorized corpus.
+        Initialize the SimSearch with a KeySearch object, which holds:
+            - The dictionary
+            - The tf-idf model and corpus
+            - The document metadata.
         
         """        
-        self.cb = corpus_builder
-    
-    def initWithoutCB(self, corpus_tfidf=None, titles=None, dictionary=None, tagsToEntries=None):
-        """
-        SimSearch is generally intented to be used along with a CorpusBuilder,
-        but it is also possible to provide the required objects separately.
-        TODO - This needs to be implemented.
-        """        
-        #self.corpus_tfidf = corpus_tfidf
-        #self.titles = titles
-        #self.dictionary = dictionary
-        #self.tagsToEntries = tagsToEntries
-        
+        self.ksearch = key_search
+           
 
     def trainLSI(self, num_topics=100):
         """
@@ -54,10 +44,10 @@ class SimSearch(object):
         # Look-up the number of features in the tfidf model.
         #self.num_tfidf_features = max(self.corpus_tfidf.dfs) + 1        
         
-        self.lsi = LsiModel(self.cb.corpus_tfidf, num_topics=self.num_topics, id2word=self.cb.dictionary)   
+        self.lsi = LsiModel(self.ksearch.corpus_tfidf, num_topics=self.num_topics, id2word=self.ksearch.dictionary)   
     
         # Transform corpus to LSI space and index it
-        self.index = similarities.MatrixSimilarity(self.lsi[self.cb.corpus_tfidf], num_features=num_topics) 
+        self.index = similarities.MatrixSimilarity(self.lsi[self.ksearch.corpus_tfidf], num_features=num_topics) 
     
     
     def findSimilarToVector(self, input_tfidf, topn=10, in_corpus=False):
@@ -141,7 +131,7 @@ class SimSearch(object):
             (doc_id, similarity_value)
         """
         # Parse the input text and create a tf-idf representation.        
-        tfidf_vec = self.cb.getTfidfForText(text)
+        tfidf_vec = self.ksearch.getTfidfForText(text)
         
         # Pass the call down.        
         return self.findSimilarToVector(tfidf_vec, topn=topn, in_corpus=False)
@@ -158,7 +148,7 @@ class SimSearch(object):
         """
 
         # Convert the file to tf-idf.
-        input_tfidf = self.cb.getTfidfForFile(filename)
+        input_tfidf = self.ksearch.getTfidfForFile(filename)
     
         # Pass the call down.
         return self.findSimilarToVector(input_tfidf, topn)
@@ -197,14 +187,39 @@ class SimSearch(object):
         
         # I pre-pend a '!' to indicate that a document does not belong under
         # a specific tag (I do this to create negative samples)
-        if ('!' + tag) in self.cb.tagsToEntries:
-            exclude_ids = set(self.cb.tagsToEntries['!' + tag])
+        if ('!' + tag) in self.ksearch.tagsToEntries:
+            exclude_ids = set(self.ksearch.tagsToEntries['!' + tag])
         else:
             exclude_ids = set()
         
         # Find all documents marked with 'tag'.
-        input_ids = self.cb.tagsToEntries[tag]
-
+        input_ids = self.ksearch.tagsToEntries[tag]
+        
+        if verbose:
+            print '\nMost similar documents to "' + tag + '":'
+            print '\nInput documents:'
+        
+        # Calculate the combined similarities for all input vectors.
+        sims_sum = []
+        
+        for i in input_ids:
+            # Get the LSI vector for this document.    
+            input_vec = self.lsi[self.ksearch.corpus_tfidf[i]]
+        
+            print '  ' + self.ksearch.titles[i]
+        
+            # Calculate the similarities between this and all other entries.
+            sims = self.index[input_vec]
+        
+            # Accumulate the similarities across all input vectors.
+            if len(sims_sum) == 0:
+                sims_sum = sims
+            else:
+                sims_sum = np.sum([sims, sims_sum], axis=0)
+                    
+        # Sort the combined similarities.
+        sims_sum = sorted(enumerate(sims_sum), key=lambda item: -item[1])    
+        
         # Append the input ids to the list of those to exclude from the results
         exclude_ids = exclude_ids + input_ids
 
@@ -212,9 +227,8 @@ class SimSearch(object):
         input_vecs = [self.cb.getTfidfForDoc(doc_id) for doc_id in input_ids]
         
         # Pass the call down.
-        self.findSimilarToVecs(input_vecs, exclude_ids=exclude_ids, topn=topn)
+        return self.findSimilarToVecs(input_vecs, exclude_ids=exclude_ids, topn=topn)
         
-
     def sparseToDense(self, sparse_vec, length):
         """
         Convert from a sparse vector representation to a dense vector. 
@@ -246,17 +260,17 @@ class SimSearch(object):
         # dense representations.        
         vec1_lsi = self.sparseToDense(self.lsi[vec1_tfidf], self.lsi.num_topics)
         vec2_lsi = self.sparseToDense(self.lsi[vec2_tfidf], self.lsi.num_topics)
-        vec1_tfidf = self.sparseToDense(vec1_tfidf, self.cb.getVocabSize())
-        #vec2_tfidf = self.sparseToDense(self.cb.corpus_tfidf[id2], self.cb.getVocabSize())    
+        vec1_tfidf = self.sparseToDense(vec1_tfidf, self.ksearch.getVocabSize())
+        #vec2_tfidf = self.sparseToDense(self.ksearch.corpus_tfidf[id2], self.ksearch.getVocabSize())    
 
         # Calculate the norms of the two LSI vectors.
         norms = np.linalg.norm(vec1_lsi) * np.linalg.norm(vec2_lsi)    
                 
         # Create a vector to hold the similarity contribution of each word.
-        word_sims = np.zeros(self.cb.getVocabSize())
+        word_sims = np.zeros(self.ksearch.getVocabSize())
 
         # For each word in the vocabulary...
-        for word_id in range(0, self.cb.getVocabSize()):
+        for word_id in range(0, self.ksearch.getVocabSize()):
 
             # Get the weights vector for this word. This vector has one weight
             # for each topic
@@ -284,7 +298,7 @@ class SimSearch(object):
         for i in range(0, topn):
             word_id = word_sims[i][0]
             
-            print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
+            print '  %10s    %.3f' % (self.ksearch.dictionary[word_id], word_sims[i][1])
 
         # Calculate the contribution of each word in doc 2 to the similarity.
         word_sims = self.getSimilarityByWord(vec2_tfidf, vec1_tfidf)
@@ -296,7 +310,7 @@ class SimSearch(object):
         for i in range(0, topn):
             word_id = word_sims[i][0]
             
-            print '  %10s    %.3f' % (self.cb.dictionary[word_id], word_sims[i][1])
+            print '  %10s    %.3f' % (self.ksearch.dictionary[word_id], word_sims[i][1])
 
     def getTopWordsInCluster(self, doc_ids, topn=10):
         """
@@ -306,14 +320,14 @@ class SimSearch(object):
         documents, then sorting the tf-idf values in descending order.
         """
         # Create a vector to hold the sum
-        tfidf_sum = np.zeros(self.cb.getVocabSize())
+        tfidf_sum = np.zeros(self.ksearch.getVocabSize())
         
         for doc_id in doc_ids:
             
             # Get the tf-idf vector for this document, and convert it to
             # its dense representation.
-            vec_tfidf = self.cb.getTfidfForDoc(doc_id)
-            vec_tfidf = self.sparseToDense(vec_tfidf, self.cb.getVocabSize())
+            vec_tfidf = self.ksearch.getTfidfForDoc(doc_id)
+            vec_tfidf = self.sparseToDense(vec_tfidf, self.ksearch.getVocabSize())
             
             # Add the tf-idf vector to the sum.
             tfidf_sum += vec_tfidf
@@ -325,7 +339,7 @@ class SimSearch(object):
         top_words = []        
         for i in range(0, topn):
             word_id = word_ids[i][0]
-            top_words.append(self.cb.dictionary[word_id])
+            top_words.append(self.ksearch.dictionary[word_id])
             
         return top_words
         
@@ -340,7 +354,7 @@ class SimSearch(object):
         print 'Most similar documents:'
         for i in range(0, len(results)):
             # Print the similarity value followed by the entry title.            
-            print '  %.2f    %s' % (results[i][1], self.cb.titles[results[i][0]])
+            print '  %.2f    %s' % (results[i][1], self.ksearch.titles[results[i][0]])
 
     def printResultsByLineNumbers(self, results):
         """
@@ -353,7 +367,7 @@ class SimSearch(object):
         for i in range(0, len(results)):
             # Print the similarity value followed by the source file and line
             # numbers.
-            line_nums = self.cb.getDocLocation(results[i][0])
+            line_nums = self.ksearch.getDocLocation(results[i][0])
                 
             print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
     
@@ -366,12 +380,12 @@ class SimSearch(object):
         for i in range(0, len(results)):            
             # Print the similarity value followed by the source file and line
             # numbers.            
-            line_nums = self.cb.getDocLocation(results[i][0])
+            line_nums = self.ksearch.getDocLocation(results[i][0])
                 
             print '  %.2f    %s  Lines: %d - %d' % (results[i][1], line_nums[0], line_nums[1], line_nums[2])
 
             # Call down to the CorpusBuilder to print out the doc.
-            self.cb.printDocSourcePretty(results[i][0], max_lines)
+            self.ksearch.printDocSourcePretty(results[i][0], max_lines)
             
             # Separate the results with a line.
             if len(results) > 1:
@@ -392,21 +406,20 @@ class SimSearch(object):
         self.lsi.save(save_dir + 'lsi.model')
 
         # Save the underlying CorpusBuilder as well.        
-        self.cb.save(save_dir)
+        self.ksearch.save(save_dir)
         
     @classmethod
     def load(cls, save_dir='./'):
         """
-        Load a SimSearch object from the specified directory.
-        
-        This also loads the underlying CorpusBuilder object.
+        Load a SimSearch object and it's underlying KeySearch from the 
+        specified directory. Returns both objects.
         """
         
-        # First create and load the underlying CorpusBuilder.
-        cb = CorpusBuilder()
-        cb.load(save_dir)        
-
-        ssearch = SimSearch(cb)        
+        # First create and load the underlying KeySearch.
+        ksearch = KeySearch.load(save_dir)
+        
+        # Create a SimSearch object.
+        ssearch = SimSearch(ksearch)
         
         # Load the LSI index.
         ssearch.index = similarities.MatrixSimilarity.load(save_dir + 'index.mm')
@@ -414,5 +427,5 @@ class SimSearch(object):
         # Load the LSI model.
         ssearch.lsi = LsiModel.load(save_dir + 'lsi.model')
         
-        return ssearch        
+        return (ksearch, ssearch)
         
