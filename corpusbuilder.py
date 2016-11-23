@@ -28,31 +28,40 @@ class CorpusBuilder(object):
     Document Format
     ===============
     
-    To use the CorpusBuilder with your source documents, you will need to:
-      * Convert your source documents to a plain text representation (copy and 
-        paste into notepad is one simple approach, but tools also exist).
-      * If you want to create separate vectors for different paragraphs or 
-        sections of your source documents, you will need to write your own code 
-        to split them up and provide them to the corpus builder as separate 
-        "documents"
-    
+    To use the CorpusBuilder with your source documents, you will need to 
+    convert your source documents to a plain text representation (copy and 
+    paste into notepad is one simple approach, but tools also exist).
+
     The CorpusBuilder will tokenize the documents for you using NLTK, so you
     do not need to remove punctuation, whitespace, etc.
 
+    It's possible to create multiple "documents" from a single text file.
+    For example, you might choose to create a separate for every paragraph in
+    the file. You can specify a regular expression to use for matching the
+    beginnings of "documents" within the file. 
+    
     Intended Usage
     ==============    
     The intended usage is as follows:
-        1. Create a CorpusBuilder object.
-        2. Call `setStopWordList` to provide the list of stop words.
-        3. Call `addDocument` for each doc or piece of text in your corpus.
-        4. Call `buildCorpus` to build the corpus.
-        5. Create a SimSearch object (providing the built corpus to the 
-           SimSearch constructor) and start performing similarity searches!
-        6. Save and load state by calling the save and load functions of the
-           SimSearch object--this will save the built corpus as well.
+        1. Create a CorpusBuilder object, specifying a few parameters.
+        2. Add all your text (must be *.txt) files to the CorpusBuilder using 
+           either `addDirectory` or `addFile`.
+        3. Call `buildCorpus` to build the corpus.
+        5. Create a KeySearch object using `toKeySearch`. At this point, you
+           are done with the CorpusBuilder--the KeySearch object contains
+           the finished corpus.
     
-    The `addDocument` step will convert all characters to lowercase, tokenize
-    your document with NLTK, filter stop words, and gather word frequency 
+    The next step is to create a SimSearch object and start performing 
+    similarity searches!
+    
+    The CorpusBuilder does not have any 'save' and 'load' functionality 
+    because you don't need it once the corpus is built. You can save and load
+    the resulting KeySearch object instead.
+    
+    Parsing
+    =======
+    The CorpusBuilder will convert all characters to lowercase, tokenize your
+    document with NLTK, filter stop words, and gather word frequency
     information.
     
     The `buildCorpus` step takes the final collection of documents (now 
@@ -60,7 +69,9 @@ class CorpusBuilder(object):
     once, builds the dictionary, then converts the documents into tf-idf 
     vectors. 
     
-    Once the corpus has been built, you cannot call `addDocument`.
+    Once the corpus has been built, you cannot add additional text to it.
+    However, SimSearch and KeySearch do support providing new input text to use
+    as the query for a search.
     
     Document Metadata
     =================    
@@ -77,17 +88,7 @@ class CorpusBuilder(object):
       * Document tags: You can supply a list of tags to associate with each
         document. In SimSearch, you can then search for more documents similar
         to those with a specified tag.      
-    
-    Saving & Loading
-    ================
-    The final, built CorpusBuilder can be saved to and loaded from a directory
-    using `save` and `load`. The typical useage, however is to simply save and
-    load the SimSearch object (which also saves the underlying CorpusBuilder).
-    
-    When saving the CorpusBuilder, only the dictionary, feature vectors, and
-    and document metadata are saved. The original text is not saved in any
-    form.
-        
+            
     """
     def __init__(self, stop_words_file='', doc_start_pattern='', doc_start_is_separator=True, sub_patterns=[]):
         """
@@ -323,7 +324,6 @@ class CorpusBuilder(object):
             
             # Pass down to addFile.
             self.addFile(filepath=(dir_path + f), filename=f[0:-4])
-            
 
    
     def buildCorpus(self):

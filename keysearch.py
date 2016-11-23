@@ -17,7 +17,19 @@ from gensim.models import TfidfModel
 enc_format='utf-8'
 
 class KeySearch(object):
+    """
     
+    Saving & Loading
+    ================
+    The KeySearch object can be saved to and loaded from a directory
+    using `save` and `load`. The typical useage, however is to simply save and
+    load the SimSearch object (which also saves the underlying CorpusBuilder).
+    
+    When saving the CorpusBuilder, only the dictionary, feature vectors, and
+    and document metadata are saved. The original text is not saved in any
+    form.
+
+    """
     def __init__(self, dictionary, tfidf_model, corpus_tfidf, titles, 
                   tagsToDocs, docsToTags, files, doc_line_nums):
         """
