@@ -4,7 +4,16 @@ from os import makedirs
 from os.path import exists
 
 
-#The MHC text includes a number of patterns which need to be filtered out.    
+# Create the CorpusBuilder.
+cb = CorpusBuilder()
+
+# Set the list of stop words.
+cb.setStopList('stop_words.txt')
+
+# Match blank lines as the separator between "documents".    
+cb.setDocStartPattern(r'^\s*$')
+
+#The MHC text includes a number of patterns which need to be filtered out...    
 sub_patterns = []
 
 # Remove line breaks of the form "___________"
@@ -17,13 +26,8 @@ sub_patterns.append((r'ver\. \d+(-|, )*\d*', ' '))
 # remaining numbers.
 sub_patterns.append((r'\d+\.?', ' '))
     
-# Match blank lines as the separator between "documents".    
-doc_start_pattern = r'^\s*$'
-
-# Create the CorpusBuilder.
-cb = CorpusBuilder(stop_words_file='stop_words.txt', sub_patterns=sub_patterns, 
-                   doc_start_pattern=doc_start_pattern, 
-                   doc_start_is_separator=True)
+cb.setSubstitutions(sub_patterns)
+                   
 
 print 'Parsing Matthew Henry\'s Commentary...'    
 # Parse all of the text files in the directory.

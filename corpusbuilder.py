@@ -47,7 +47,9 @@ class CorpusBuilder(object):
     Intended Usage
     ==============    
     The intended usage is as follows:
-        1. Create a CorpusBuilder object, specifying a few parameters.
+        1. Create a CorpusBuilder object, then specify a few filtering 
+           parameters such as stop words list and any regex substitutions to 
+           make.
         2. Add all your text (must be *.txt) files to the CorpusBuilder using 
            either `addDirectory` or `addFile`.
         3. Call `buildCorpus` to build the corpus.
@@ -94,7 +96,7 @@ class CorpusBuilder(object):
         to those with a specified tag.      
             
     """
-    def __init__(self, stop_words_file='', doc_start_pattern='', doc_start_is_separator=True, sub_patterns=[]):
+    def __init__(self):
         """
         `stop_words_file` is the path and filename to a file containing stop
         words to be filtered from the input text. There should be one token
@@ -119,6 +121,30 @@ class CorpusBuilder(object):
         # The final word counts can be found in self.dictionary        
         self.frequency = defaultdict(int)
 
+        self.stoplist = []
+        
+        # Record the regex pattern for the start of a document.
+        self.doc_start_pattern = ''
+
+        # Record whether the doc start pattern is the first line of the doc
+        # or just a separator (for example, an empty line)
+        self.doc_start_is_separator = True        
+        
+        # Record any regex substitutions to make.
+        self.sub_patterns = []
+
+    def setStopList(self, stop_words_file):
+        """
+        Read the stop list from a text file.
+        
+        The stop words should be one per line, and the file should be encoded
+        in the same format as what is set in corpusbuilder.py (default is
+        UTF-8). 
+        
+        The words in this file are really just any words (or tokens) that you 
+        think are  distracting for the topic model and that you want filtered 
+        out.
+        """
         # Read in all of the stop words (one per line) and store them as a set.
         # The call to f.read().splitlines() reads the lines without the newline
         # char.           
@@ -133,14 +159,37 @@ class CorpusBuilder(object):
                 
             # Convert to a set representation.    
             self.stoplist = set(stoplist)               
+
+    def setDocStartPattern(self, doc_start_pattern, doc_start_is_separator=True):
+        """
+        Set the regex pattern to match for the start of a "document" within a
+        text file. 
         
+        For example, you might choose to represent each paragraph as a separate
+        document, and use a blank line as the separator: r'^\s*$'
+        
+        If the pattern is just the empty string (the default value), then the 
+        entire file will be read as a single document.
+        """
         # Record the regex pattern for the start of a document.
         self.doc_start_pattern = doc_start_pattern
-
+        
         # Record whether the doc start pattern is the first line of the doc
         # or just a separator (for example, an empty line)
-        self.doc_start_is_separator = doc_start_is_separator        
+        self.doc_start_is_separator = doc_start_is_separator
+    
+    def setSubstitutions(self, sub_patterns):
+        """
+        Set substitutions to be made during parsing. 
+
+        Substitutions are made with re.sub.
         
+        Parameters:        
+          sub_patterns - A list of tuples of strings. The two strings in the 
+                         tuple are the two arguments to re.sub--The first 
+                         string in the tuple is the pattern to match, the 
+                         second string is what to replace it with.
+        """
         # Record any regex substitutions to make.
         self.sub_patterns = sub_patterns
     
@@ -247,17 +296,18 @@ class CorpusBuilder(object):
     
     def addFile(self, filepath, filename):
         """
+        Parse a text file into separate documents using the configured 
+        regular expressions.
+        
         
         """
         # Read in the text file
         with open(filepath) as f:
             content = f.readlines()
 
-        # TODO! Add tag support.
-        doc_tags = []    
-        
-        doc_title = ""       
-        doc = []
+        doc = []                
+        doc_title = ""
+        doc_tags = []
         doc_start = -1
         
         # For each line in the file...
@@ -265,7 +315,7 @@ class CorpusBuilder(object):
 
             # Get the next line.
             line = content[lineNum]                        
-                        
+            
             # Check for the pattern matching the start of a document.
             matchStart = re.search(self.doc_start_pattern, line)                        
 
@@ -284,8 +334,9 @@ class CorpusBuilder(object):
                 if len(doc) > 1:
                     self.addDocument(title=doc_title, lines=doc, tags=doc_tags, filename=filepath,doc_start=doc_start, doc_end=doc_end)
                 
-                doc = []
+                doc = []                
                 doc_title = ""
+                doc_tags = []
                 doc_start = -1
 
                 # If the doc_start_pattern is a separator, don't add it to
@@ -299,6 +350,16 @@ class CorpusBuilder(object):
                 if not doc_title:                
                     doc_title = filename + ' - ' + line       
                     doc_start = lineNum + 1 # Line numbers are numbered from 1.
+                
+                matchTags = re.search(r'^(Tags:)', line)
+                # If this is a tags line, then store the tags.
+                # I am also including the tags in the content.
+                if matchTags:
+                    # Remove the 'Tags: ' at the beginning.
+                    line = line[len(matchTags.group())+1:]
+
+                    # Parse the journal tags.
+                    doc_tags = line.split(', ')                             
                 
                 # Run reg ex filters to remove some tokens.
                 line = self.applyRegExFilters(line)                
