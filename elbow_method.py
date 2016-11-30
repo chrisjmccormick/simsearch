@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 
 # Load the pre-built corpus.
 print('Loading the saved SimSearch and corpus...')
-ssearch = SimSearch.load(save_dir='./mhc_corpus/')
+(ksearch, ssearch) = SimSearch.load(save_dir='./mhc_corpus/')
 
 # Get the dataset to be clustered.
 # Note - The index is store with all of the vectors *already normalized*.
