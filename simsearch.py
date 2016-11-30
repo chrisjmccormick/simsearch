@@ -167,7 +167,7 @@ class SimSearch(object):
         #  1. Look up the tf-idf vector for the entry.
         #  2. Project it onto the LSI vector space.
         #  3. Compare the LSI vector to the entire collection.
-        tfidf_vec = self.cb.corpus_tfidf[doc_id]
+        tfidf_vec = self.ksearch.corpus_tfidf[doc_id]
         
         # Pass the call down, specifying that the input is a part of the 
         # corpus.
@@ -195,10 +195,6 @@ class SimSearch(object):
         # Find all documents marked with 'tag'.
         input_ids = self.ksearch.tagsToEntries[tag]
         
-        if verbose:
-            print '\nMost similar documents to "' + tag + '":'
-            print '\nInput documents:'
-        
         # Calculate the combined similarities for all input vectors.
         sims_sum = []
         
@@ -224,7 +220,7 @@ class SimSearch(object):
         exclude_ids = exclude_ids + input_ids
 
         # Lookup the vectors for all of the input docs.        
-        input_vecs = [self.cb.getTfidfForDoc(doc_id) for doc_id in input_ids]
+        input_vecs = [self.ksearch.getTfidfForDoc(doc_id) for doc_id in input_ids]
         
         # Pass the call down.
         return self.findSimilarToVecs(input_vecs, exclude_ids=exclude_ids, topn=topn)
