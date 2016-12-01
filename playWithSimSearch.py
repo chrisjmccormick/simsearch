@@ -35,6 +35,8 @@ def runExample1(ksearch, ssearch):
     # Retrieve the tf-idf vectors for the input document and it's closest match.
     vec1_tfidf = ksearch.getTfidfForDoc(73)
     vec2_tfidf = ksearch.getTfidfForDoc(results[0][0])
+
+    print('')    
     
     # Interpret the top match.
     ssearch.interpretMatch(vec1_tfidf, vec2_tfidf)
