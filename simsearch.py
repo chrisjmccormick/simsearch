@@ -278,10 +278,58 @@ class SimSearch(object):
         # print 'Total word contributions:', np.sum(word_sims)  
         return word_sims
 
-    def interpretMatch(self, vec1_tfidf, vec2_tfidf, topn=10):
+    def printWordSims(self, word_sims, topn, min_pos, max_neg):
         """
-        Displays the `topn` words in each document which contribute to the 
-        total similarity between the two specified documents.
+        Internal function used by `interpretMatch` to display the contributing
+        words.
+        """
+        # TODO - First create the list of results in interpretMatch, then
+        #        in this function just do the printing, and adapt the column
+        #        width to the maximum word length in the results...
+        
+        # Build up the table of results to display.        
+        tableStr = ''
+        for i in range(0, topn):
+            pos_word_id, pos_word_val = word_sims[i]
+            neg_word_id, neg_word_val = word_sims[-(i + 1)]
+            
+            pos_word = self.ksearch.dictionary[pos_word_id]
+            neg_word = self.ksearch.dictionary[neg_word_id]                       
+
+            # If neither words pass the thresholds, break.
+            if ((pos_word_val <= min_pos) and (neg_word_val >= max_neg)):
+                break
+            
+            # Only display the positive word if the value passes the threshold.
+            if (pos_word_val > min_pos):
+                tableStr += '  %15s  +%.3f' % (pos_word, pos_word_val)
+            # Otherwise add empty space.
+            else:
+                # e.g.,     '          freedom  +0.440'
+                tableStr += '                         '
+            
+            # Only display the negative word if the value passes the threshold.
+            if (neg_word_val < max_neg):
+                tableStr += '    %15s  %.3f\n' % (neg_word, neg_word_val)
+            # Otherwise just end the line.
+            else:
+                tableStr += '\n'
+        
+        print(tableStr)
+
+    def interpretMatch(self, vec1_tfidf, vec2_tfidf, topn=10, min_pos=0.1, max_neg=-0.01):
+        """
+        Displays the words in each document which contribute the most 
+        (positively or negatively) to the total similarity between the two
+        specified documents.
+        
+        At most `topn` positive words and `topn` negative words will be
+        displayed.
+        
+        Only words which contribute a positive similarity above `min_pos` are
+        shown. Similarly, only words which contribute a negative similarity
+        below `max_neg` are shown.
+        
         """
 
         # Calculate the contribution of each word in doc 1 to the similarity.        
@@ -290,11 +338,8 @@ class SimSearch(object):
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop', topn, 'words in doc 1 which contribute to similarity:'
-        for i in range(0, topn):
-            word_id = word_sims[i][0]
-            
-            print '  %10s    %.3f' % (self.ksearch.dictionary[word_id], word_sims[i][1])
+        print 'Words in doc 1 which contribute most to similarity:'
+        self.printWordSims(word_sims, topn, min_pos, max_neg)
 
         # Calculate the contribution of each word in doc 2 to the similarity.
         word_sims = self.getSimilarityByWord(vec2_tfidf, vec1_tfidf)
@@ -302,11 +347,9 @@ class SimSearch(object):
         # Sort the similarities, biggest to smallest.    
         word_sims = sorted(enumerate(word_sims), key=lambda item: -item[1])
 
-        print '\nTop', topn, 'words in doc 2 which contribute to similarity:'
-        for i in range(0, topn):
-            word_id = word_sims[i][0]
-            
-            print '  %10s    %.3f' % (self.ksearch.dictionary[word_id], word_sims[i][1])
+        print 'Words in doc 2 which contribute most to similarity:'
+        self.printWordSims(word_sims, topn, min_pos, max_neg)
+    
 
     def getTopWordsInCluster(self, doc_ids, topn=10):
         """
