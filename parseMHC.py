@@ -8,7 +8,7 @@ from os.path import exists
 cb = CorpusBuilder()
 
 # Set the list of stop words.
-cb.setStopList('stop_words.txt')
+cb.setStopList('stop_words_mhc.txt')
 
 # Match blank lines as the separator between "documents".    
 cb.setDocStartPattern(r'^\s*$')
@@ -54,7 +54,7 @@ ssearch = SimSearch(ksearch)
 
 # Train LSI with 100 topics.
 print '\nTraining LSI...'
-ssearch.trainLSI(num_topics=100)
+ssearch.trainLSI(num_topics=300)
 
 print '\nSaving to disk...'
 if not exists('./mhc_corpus/'):
