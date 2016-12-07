@@ -21,7 +21,7 @@ def runExample1(ksearch, ssearch):
     print('')
     
     # Display the source document.
-    print('Doc 73:')
+    print('Input - (Doc 73):')
     ksearch.printDocSourcePretty(doc_id=73, max_lines=5)
     
     print('')
@@ -62,6 +62,8 @@ def runExample2(ksearch, ssearch):
     
     print('Clustering all documents in corpus...')
     # Initialize a k-means clustering object.
+    # Note: There is no 'cosine' metric for k-means. But if the vectors are
+    # all normalized (they are) than Euclidean is equivalent.
     km = KMeans(n_clusters=k, init='k-means++', max_iter=100)
     
     # Cluster the LSI vectors.     
@@ -79,7 +81,7 @@ def runExample2(ksearch, ssearch):
         # Get the top words in this cluster
         top_words = ssearch.getTopWordsInCluster(cluster_doc_ids)
 
-        print('  Cluster %d: %s' % (cluster_id, " ".join(top_words)))
+        print('  Cluster %d: (%d docs) %s' % (cluster_id, len(cluster_doc_ids), " ".join(top_words)))
 
 
 # Load the pre-built corpus.
