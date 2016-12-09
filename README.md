@@ -97,11 +97,11 @@ You'll need to install:
 ## Punkt Installation
 Once you've installed NLTK, type the following in Python to launch the NLTK downloader utility.
 
-{% highlight text %}
+```python
 >> import nltk
 
 >> nltk.download()
-{% endhighlight %}
+```
 
 Then download `punkt` from the Models tab.
 ![NLTK Downloader](http://www.mccormickml.com/assets/nltk/nltk_downloader_punkt.png)
