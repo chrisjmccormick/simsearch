@@ -5,14 +5,20 @@ specified in a text file 'input.txt'.
 
 It also provides a simple user interface for reviewing the results.
 
-@author: Chris
+@author: Chris McCormick
 """
 
 from simsearch import SimSearch
 
+###############################################################################
 # Load the pre-built corpus.
+###############################################################################
 print('Loading the saved SimSearch and corpus...')
 (ksearch, ssearch) = SimSearch.load(save_dir='./mhc_corpus/')
+
+###############################################################################
+# Read `input.txt` as input text for search.
+###############################################################################
 
 # Load 'input.txt' as the input to the search.
 input_vec = ksearch.getTfidfForFile('input.txt')
@@ -20,10 +26,18 @@ input_vec = ksearch.getTfidfForFile('input.txt')
 # Number of results to go through.
 topn = 10
 
+###############################################################################
+# Perform the search
+###############################################################################
+
 print 'Searching by contents of input.txt...'
 
 # Perform the search.
 results = ssearch.findSimilarToVector(input_vec, topn=topn)
+
+###############################################################################
+# Display results.
+###############################################################################
 
 for i in range(0, topn):
 

@@ -60,3 +60,4 @@ for doc_id in results:
     # f -> Display full doc source.
     elif (command == 'f'):
         ksearch.printDocSourcePretty(doc_id, max_lines=100)
+        raw_input('Press enter to continue...')
