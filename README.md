@@ -68,22 +68,21 @@ I've provided an example corpus to demonstrate the use of SimSearch.
 
 The sample document collection is an exhaustive Biblical commentary written around 1710 by Matthew Henry. His entire commentary is [available online](https://www.ccel.org/ccel/henry/mhc) in plain text, and is public domain. His thoughts are divided into subsections which are neatly separated by blank lines. This allowed me to parse them easily, and I treat each subsection as a separate "document". This creates a total of 30,707 documents! That man spent a lot of time writing...
 
-## Running the Examples
-Here are the steps to run the example.
+## Preparing Corpus
+The first step to running the example is preparing the corpus.
 
 Step 1: Unzip mhc.zip (under `/mhc/`, MHC = "Matthew Henry's Commentary") so that you have `/mhc/mhc1.txt`, `/mhc/mhc2.txt`, ... `/mhc/mhc6.txt`.
 
 Step 2: Run the script `parseMHC.py`. This will use CorpusBuilder to create a gensim corpus from the commentary. This will take a couple minutes. Finally, the resulting CorpusBuilder object is used to create a SimSearch object, and this is saved to the subdirectory `/mhc_corpus/`.
 
-Step 3: Run the script `playWithSimSearch.py`. This will load the SimSearch object from disk, then perform some example searches.
-
 ## Description of Examples
-Inside `playWithSimSearch.py` you'll find two examples (each one defined in a separate subroutine, so you can choose which to run).
+I've included several example scripts, all named with the format run*.py
 
-*Example 1*: This example takes a particular section of the MHC text, and searches for closest matches to it in the corpus. It also interprets the top match, displaying which words contributed most to the similarity.
+`runSearchByDoc.py`: This example takes a particular section of the MHC text, and searches for closest matches to it in the corpus. It also interprets the top match, displaying which words contributed most to the similarity.
 
-*Example 2*: This example clusters the entire MHC corpus with k-means and displays the top words for each resulting cluster.
+`runKMeansClustering.py`: This example clusters the entire MHC corpus with k-means and displays the top words for each resulting cluster.
 
+`runSearchByText.py`: This example demonstrates my most typical useage of SimSearch--searching the corpus given some new input text. Paste your query text into `input.txt` and then run this script.
 
 # Installation and Dependencies
 
