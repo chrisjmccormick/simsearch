@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Nov 18 16:11:40 2016
+This script uses the elbow method to help identify a good value of 'k' to use
+for k-means clustering.
 
-@author: Chris
+@author: Chris McCormick
 """
 
 from scipy.spatial.distance import cdist, pdist

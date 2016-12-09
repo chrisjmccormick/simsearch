@@ -10,8 +10,6 @@ from sklearn.cluster import DBSCAN
 import sklearn
 import time
 
-
-
 from sklearn.neighbors import NearestNeighbors
 
 
