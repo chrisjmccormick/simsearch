@@ -88,7 +88,7 @@ class KeySearch(object):
 
         # Print each tag followed by the number of documents.
         for tag in tags:
-            print '%s %3d' % (tag, len(self.tagsToDocs[tag]))       
+            print '%20s %3d' % (tag, len(self.tagsToDocs[tag]))       
         
     def getTfidfForText(self, text):
         """
@@ -178,7 +178,8 @@ class KeySearch(object):
             
             # Verify the word exists in the dictionary.
             if word_id == -1:
-                raise 'Word', word.lower(), 'not in dictionary!'
+                print 'WARNING: Word \'' + word.lower() + '\'not in dictionary!'
+                continue
             
             # Add the word id to the list.
             include_ids.append(word_id)
