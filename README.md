@@ -17,7 +17,7 @@ Contents
   * [KeySearch](#keysearch)
   * [SimSearch](#simsearch)
 * [Example Code](#exmaple-code)
-  * [Running the Examples](#running-the-examples)
+  * [Preparing Corpus](#preparing-corpus)
   * [Description of Examples](#description-of-examples)
 * [Installation and Dependencies](#installation-and-dependencies)
   * [Punkt Installation](#punkt-installation)
@@ -83,6 +83,8 @@ I've included several example scripts, all named with the format run*.py
 `runKMeansClustering.py`: This example clusters the entire MHC corpus with k-means and displays the top words for each resulting cluster.
 
 `runSearchByText.py`: This example demonstrates my most typical useage of SimSearch--searching the corpus given some new input text. Paste your query text into `input.txt` and then run this script.
+
+`runSearchByKeyword.py`: This example shows how to search the corpus by keywords--note that it's not indexed, so it's slow.
 
 # Installation and Dependencies
 
