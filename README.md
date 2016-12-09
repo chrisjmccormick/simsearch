@@ -86,6 +86,8 @@ I've included several example scripts, all named with the format run*.py
 
 `runSearchByKeyword.py`: This example shows how to search the corpus by keywords--note that it's not indexed, so it's slow.
 
+`runElbowMethod.py`: This script uses the "elbow method" to help find a good value of 'k' to use for k-means clustering.
+
 # Installation and Dependencies
 
 You'll need to install:
