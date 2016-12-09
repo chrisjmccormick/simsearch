@@ -74,7 +74,22 @@ class KeySearch(object):
 
         self.files = files
         self.doc_line_nums = doc_line_nums
-            
+    
+    def printTags(self):
+        """
+        Print all of the tags present in the corpus, plus the number of docs
+        tagged with each.        
+        """
+        print 'All tags in corpus (# of documents):'
+        
+        # Get all the tags and sort them alphabetically.
+        tags = self.tagsToDocs.keys()
+        tags.sort()        
+
+        # Print each tag followed by the number of documents.
+        for tag in tags:
+            print '%s %3d' % (tag, len(self.tagsToDocs[tag]))       
+        
     def getTfidfForText(self, text):
         """
         This function takes new input `text` (not part of the original corpus),
